@@ -303,6 +303,8 @@ function resetKnockouts() {
     document.getElementById('nav-stage3').disabled = true;
     document.getElementById('nav-stage4').disabled = true;
     window.hasSavedChampion = false; // YENİ EKLENDİ (Yeni oyun için kilidi açar)
+    localStorage.removeItem('wc2026_voted'); // ✅ Kilidi kaldır ki yeni şampiyonu oylayabilsin
+    window.hasSavedChampion = false;
 }
 
 window.switchStage = function(stageNum) {
