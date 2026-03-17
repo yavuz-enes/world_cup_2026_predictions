@@ -170,65 +170,109 @@ table th { background-color: var(--table-header); color: var(--primary-color); }
 .tooltip-card strong { color: var(--text-color); }
 
 /* ======================================================================== */
-/* 📱 MOBİL UYUMLULUK (RESPONSIVE DESIGN) */
+/* 📱 MOBİL UYUMLULUK (RESPONSIVE DESIGN) - GELİŞMİŞ VERSİYON */
 /* ======================================================================== */
 
 @media (max-width: 768px) {
-    /* 1. Üst Navigasyon Butonları (Yan yana sıkışmasın, 2x2 dizilsin) */
+    /* 1. HEADER (BAŞLIK VE BUTONLARIN DÜZELTİLMESİ) */
+    body {
+        padding-top: 45px; /* Canlı sayaç için üstten nefes boşluğu */
+    }
+
+    #live-counter {
+        position: absolute !important;
+        top: 5px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important; /* Tam tepeye ve ortaya sabitler */
+        width: max-content;
+        z-index: 1000;
+        font-size: 11px;
+        padding: 4px 10px;
+    }
+
+    h1 {
+        font-size: 20px !important; /* Başlığı telefona uygun küçült */
+        text-align: center;
+        margin-top: 15px;
+        line-height: 1.4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    /* Zarlar, yenileme ve ayar butonlarını başlığın altına hizala */
+    h1 button, .header-buttons {
+        position: static !important;
+        float: none !important;
+        display: inline-flex;
+        justify-content: center;
+        margin: 0 5px;
+    }
+
+    /* 2. NAVİGASYON (Aşama Butonları) */
     nav {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        padding: 10px;
+        padding: 5px;
+        margin-bottom: 20px;
     }
     nav button {
-        flex: 1 1 45%; /* Butonlar ekranı %45 - %45 bölüşür */
+        flex: 1 1 45%;
         font-size: 0.9em;
-        padding: 12px 5px;
+        padding: 10px 5px;
     }
 
-    /* 2. Grid Konteynerlar (Gruplar ve Sonuçlar tek sütun olsun) */
+    /* 3. GRUPLAR VE SONUÇLAR (Tek Sütun) */
     .grid-container, 
     #groups-container, 
     #results-container .result-grid,
     #manual-thirds-grid {
         display: grid !important;
-        grid-template-columns: 1fr !important; /* Mobilde her şey alt alta dizilir */
+        grid-template-columns: 1fr !important;
         gap: 15px;
     }
 
-    /* 3. Kartlar ve Boşluklar */
-    .card {
-        margin: 10px 5px;
-        padding: 15px 10px;
-    }
-
-    /* 4. Puan Durumu Tabloları (Taşmayı engeller, kaydırılabilir yapar) */
     table {
-        font-size: 0.85em; /* Yazıları hafif küçültürüz */
+        font-size: 0.8em;
         display: block;
         overflow-x: auto;
-        white-space: nowrap; /* Yazıların alt satıra inip tabloyu bozmasını engeller */
-        -webkit-overflow-scrolling: touch; /* iPhone'larda akıcı kaydırma sağlar */
+        white-space: nowrap;
     }
 
-    /* 5. Eleme Ağacı (Bracket) ve Play-off (Mobilde efsane görünmesi için) */
+    /* 4. ELEME AĞACI (BRACKET) - ALT ALTA LİSTE GÖRÜNÜMÜ */
+    /* Senin istediğin gibi, ekranı yana kaydırmak yerine turları alt alta dizer */
     #bracket-container, 
     #playoff-container {
-        display: flex;
-        overflow-x: auto; /* Sağa sola parmakla kaydırma özelliği */
-        padding-bottom: 30px;
-        -webkit-overflow-scrolling: touch;
-        scroll-snap-type: x mandatory; /* Kartların ekrana tam oturmasını sağlar */
-    }
-    
-    .round {
-        min-width: 250px; /* Ağaçtaki her sütunun (Son 16, Çeyrek Final vs.) genişliği */
-        scroll-snap-align: center;
-        margin-right: 15px;
+        display: flex !important;
+        flex-direction: column !important; /* Yana değil, ALT ALTA dizer */
+        overflow-x: hidden !important;
+        align-items: center;
+        gap: 30px;
     }
 
-    /* 6. Takım Bilgi Kartları (Tooltip) - Mobilde parmağın altında kalmasın diye alta sabitliyoruz */
+    .round {
+        width: 100% !important;
+        min-width: 100% !important;
+        margin-right: 0 !important;
+        padding: 0 5px;
+        box-sizing: border-box;
+    }
+
+    /* Maçlar arasındaki devasa boşlukları mobilde sıfırla */
+    .match-pair, .knockout-match {
+        margin: 10px 0 !important;
+        min-height: auto !important;
+    }
+
+    /* Final kısmını ortala */
+    .final-column {
+        margin-top: 20px;
+        align-items: center;
+    }
+
+    /* 5. DİĞER DÜZELTMELER */
     #team-tooltip {
         position: fixed !important;
         bottom: 20px !important;
@@ -238,11 +282,5 @@ table th { background-color: var(--table-header); color: var(--primary-color); }
         width: 90% !important;
         z-index: 10000;
         box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
-    }
-
-    /* 7. Bildirim Ekranı (Modal) */
-    .modal-content {
-        width: 90%;
-        margin: 30% auto;
     }
 }
