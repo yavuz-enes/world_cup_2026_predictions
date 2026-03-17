@@ -290,9 +290,9 @@ function loadData() {
 }
 
 document.getElementById('btn-restart').addEventListener('click', () => {
-    showCustomConfirm("Tüm tahminleriniz silinecek ve oyun en başa dönecek. Emin misiniz?", () => {
-        // DÜZELTME: Sadece oyun verilerini siliyoruz (wc2026_save), ayarlar kasasına (wc2026_prefs) dokunmuyoruz!
-        localStorage.removeItem('wc2026_save'); 
+    showCustomConfirm("Tüm tahminleriniz silinecek...", () => {
+        localStorage.removeItem('wc2026_save');
+        localStorage.removeItem('wc2026_voted'); // ✅ Bunu da ekle
         location.reload();
     });
 });
