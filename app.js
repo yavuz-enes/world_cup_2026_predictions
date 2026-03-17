@@ -704,10 +704,11 @@ function generateBracket() {
     switchStage(3);
 }
 
-// --- YENİ: AĞAÇ SEÇİMLERİ, OTOMATİK GEÇİŞ VE KAYDIRMA ---
+// --- YENİ: HAFIZALI VE OTOMATİK AŞAĞI KAYDIRMALI SEÇİM SİSTEMİ ---
 window.selectKnockoutWinner = function(round, matchIdx, teamId) {
     function isRoundComplete(r) { return bracket[r].every(m => m.w !== null); }
     
+    // Kurallar ve Uyarılar
     if (round === 'r16' && !isRoundComplete('r32')) { showCustomAlert("Lütfen önce Son 32 turundaki tüm maçları tamamlayın!"); return; }
     if (round === 'qf' && !isRoundComplete('r16')) { showCustomAlert("Lütfen önce Son 16 turundaki tüm maçları tamamlayın!"); return; }
     if (round === 'sf' && !isRoundComplete('qf')) { showCustomAlert("Lütfen önce Çeyrek Final turundaki tüm maçları tamamlayın!"); return; }
@@ -717,6 +718,7 @@ window.selectKnockoutWinner = function(round, matchIdx, teamId) {
     const rounds = ['r32', 'r16', 'qf', 'sf', 'final'];
     const currentRoundIdx = rounds.indexOf(round);
     
+    // Sonraki Turlara Aktarma İşlemleri
     if (round === 'sf') {
         const match = bracket.sf[matchIdx];
         const loserId = (match.t1 === teamId) ? match.t2 : match.t1;
@@ -732,23 +734,58 @@ window.selectKnockoutWinner = function(round, matchIdx, teamId) {
     
     if (round === 'thirdPlace') bracket['thirdPlace'][0].w = teamId;
     saveData(); 
-    renderBracket();
 
-    // YENİ: HER İKİ FİNAL MAÇI BİTİNCE OTOMATİK SONUCA GEÇ (KONFETİLİ)
-    if (bracket.final[0].w && bracket.thirdPlace[0].w) {
-        setTimeout(() => {
-            switchStage(4);
-        }, 800); // Seçimi görsün diye 0.8 saniye bekler ve geçer
-        return; // Kaydırma animasyonunu yapmasın diye buradan çıkarız
+    // 🚨 1. AŞAMA: EKRAN YENİLENMEDEN ÖNCE KAYDIRMA ÇUBUĞUNUN YERİNİ HAFIZAYA AL
+    const container = document.getElementById('bracket-container');
+    const scrollLeft = container ? container.scrollLeft : 0;
+    const roundScrolls = {};
+    if (container) {
+        container.querySelectorAll('.round').forEach(r => {
+            roundScrolls[r.id] = r.scrollTop;
+        });
     }
 
+    renderBracket(); // Ekranı baştan çiz (Bu işlem normalde ekranı en üste fırlatır)
+
+    // 🚨 2. AŞAMA: EKRAN ÇİZİLDİĞİ AN KAYDIRMA YERİNİ GERİ YÜKLE (Zıplamayı Önler)
+    const newContainer = document.getElementById('bracket-container');
+    if (newContainer) {
+        newContainer.scrollLeft = scrollLeft;
+        newContainer.querySelectorAll('.round').forEach(r => {
+            if (roundScrolls[r.id]) r.scrollTop = roundScrolls[r.id];
+        });
+    }
+
+    // HER İKİ FİNAL BİTİNCE SONUÇLARA GEÇ
+    if (bracket.final[0].w && bracket.thirdPlace[0].w) {
+        setTimeout(() => { switchStage(4); }, 800);
+        return; 
+    }
+
+    // 🚨 3. AŞAMA: İKİ MAÇ (BİR ÇİFT) BİTTİĞİNDE OTOMATİK AŞAĞI KAYDIR (SADECE MOBİL)
+    let pairPartnerIdx = matchIdx % 2 === 0 ? matchIdx + 1 : matchIdx - 1; 
+    if (bracket[round][pairPartnerIdx] && bracket[round][matchIdx].w && bracket[round][pairPartnerIdx].w) {
+        
+        let nextPairIdx = matchIdx % 2 === 0 ? matchIdx + 2 : matchIdx + 1;
+        let nextMatchElem = document.getElementById(`${round}-${nextPairIdx}-t1`);
+        
+        // 📱 YENİ: Sadece ekran genişliği 768px veya altındaysa (yani telefonsa) kaydır
+        if (nextMatchElem && window.innerWidth <= 768) {
+            setTimeout(() => {
+                let matchBox = nextMatchElem.closest('.knockout-match') || nextMatchElem;
+                matchBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 250); 
+        }
+    }
+
+    // TUR BİTTİYSE YANA (SONRAKİ TURA) KAYDIR
     let nextColMap = { 'r32': 'r16', 'r16': 'qf', 'qf': 'sf', 'sf': 'final-col' };
     if (round !== 'final' && round !== 'thirdPlace' && isRoundComplete(round)) {
         let nextColId = 'round-col-' + nextColMap[round];
         setTimeout(() => {
             const col = document.getElementById(nextColId);
             if(col) col.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-        }, 150); 
+        }, 300); 
     }
 };
 
@@ -1327,3 +1364,47 @@ switchStage(currentStage);
 if (groups['A'].teams.length === 4) document.getElementById('nav-stage2').disabled = false;
 if (bracket.r32.length > 0) document.getElementById('nav-stage3').disabled = false;
 if (bracket.final[0] && bracket.final[0].w) document.getElementById('nav-stage4').disabled = false;
+
+// ========================================================================
+// 🍔 AKILLI BURGER MENÜ SİSTEMİ (MASAÜSTÜ & MOBİL)
+// ========================================================================
+document.addEventListener("DOMContentLoaded", () => {
+    const btnSimulate = document.getElementById('btn-simulate');
+    const btnRestart = document.getElementById('btn-restart');
+    const btnSettings = document.getElementById('btn-settings');
+    
+    // Eğer butonlar sayfada varsa işlemi yap
+    if(btnSimulate && btnRestart && btnSettings) {
+        const menuWrapper = document.createElement('div');
+        menuWrapper.id = 'smart-menu-wrapper';
+        
+        const burgerBtn = document.createElement('button');
+        burgerBtn.id = 'smart-burger-btn';
+        burgerBtn.innerHTML = '☰'; // Menü İkonu
+        
+        const dropdown = document.createElement('div');
+        dropdown.id = 'smart-dropdown';
+        
+        // Logoları yeni akıllı kutuya taşı
+        dropdown.appendChild(btnSimulate);
+        dropdown.appendChild(btnRestart);
+        dropdown.appendChild(btnSettings);
+        
+        menuWrapper.appendChild(burgerBtn);
+        menuWrapper.appendChild(dropdown);
+        document.body.appendChild(menuWrapper);
+        
+        // Burger butona tıklayınca menüyü aç/kapat
+        burgerBtn.addEventListener('click', (e) => {
+            dropdown.classList.toggle('show');
+            e.stopPropagation();
+        });
+        
+        // Ekranda boş bir yere tıklanırsa menüyü otomatik kapat
+        document.addEventListener('click', (e) => {
+            if(!menuWrapper.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    }
+});
