@@ -53,7 +53,7 @@ db.ref('.info/connected').on('value', (snapshot) => {
 // Toplam sayıyı dinle ve ekrana yaz (+12 hilesiyle!)
 onlineRef.on('value', (snapshot) => {
     const realCount = snapshot.numChildren(); 
-    const fakeCount = realCount + 12; // İstediğin 12 kişilik bonus
+    const fakeCount = realCount + 6; // İstediğin 12 kişilik bonus
     
     const counterText = document.getElementById('online-count');
     if (counterText) {
