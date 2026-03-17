@@ -1174,12 +1174,35 @@ window.runSimulation = function() {
 // ========================================================================
 // ℹ️ TAKIM BİLGİ KARTLARI (KADRO DEĞERLERİ EKLENDİ)
 // ========================================================================
-function getHoverAttr(teamId) {
+// Mobilde basılı tutmayı algılamak için zamanlayıcı
+let tooltipTimer;
+
+window.getHoverAttr = function(teamId) {
     if (!teamId || teamId.startsWith('Bekleniyor')) return '';
     const team = getTeamData(teamId);
-    if (team.name === 'Bay Geçer') return ''; // Bay Geçer'de kart açılmasın   
-    return `onmousemove="showTooltip('${teamId}', event)" onmouseleave="hideTooltip()" ontouchstart="showTooltip('${teamId}', event)" ontouchend="setTimeout(hideTooltip, 1500)" oncontextmenu="return false;"`;
+    if (team.name === 'Bay Geçer') return ''; 
+    
+    // Bilgisayarda mouse ile (hover), Mobilde basılı tutunca (500ms) açılır
+    return `
+        onmouseenter="if(window.innerWidth > 768) showTooltip('${teamId}', event)" 
+        onmouseleave="if(window.innerWidth > 768) hideTooltip()"
+        ontouchstart="tooltipTimer = setTimeout(() => showTooltip('${teamId}', event), 400)"
+        ontouchend="clearTimeout(tooltipTimer)"
+        ontouchmove="clearTimeout(tooltipTimer)"
+        oncontextmenu="event.preventDefault(); return false;"
+    `;
 }
+
+// YENİ: Tooltip açıkken ekranda BÖŞ BİR YERE dokunulursa tooltip'i kapatır
+document.addEventListener('touchstart', function(e) {
+    const tooltip = document.getElementById('team-tooltip');
+    if (tooltip && tooltip.style.display === 'block') {
+        // Eğer dokunulan yer bir takım değilse ve tooltip'in kendisi değilse gizle
+        if (!e.target.closest('.team-option') && !e.target.closest('#team-tooltip')) {
+            hideTooltip();
+        }
+    }
+});
 
 const TEAM_INFO = {
     // --- 🌟 İLK 10 ---
