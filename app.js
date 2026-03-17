@@ -22,16 +22,23 @@ window.saveGlobalStats = function(t1Id, t2Id, t3Id, t4Id) {
     const getTName = (id) => getTeamData(id).name;
     const n1 = getTName(t1Id), n2 = getTName(t2Id), n3 = getTName(t3Id), n4 = getTName(t4Id);
 
+    console.log("📊 Veritabanına gönderiliyor:", {n1, n2, n3, n4}); // Takip için
+
     const updatePos = (name, pos) => {
         if (!name || name.startsWith('Bekleniyor') || name === 'Bay Geçer') return;
-        // global_stats klasörü altında ülkenin madalya sayısını 1 artırır
-        db.ref('global_stats/' + name + '/' + pos).transaction(count => (count || 0) + 1);
+        
+        db.ref('global_stats/' + name + '/' + pos).transaction(count => {
+            return (count || 0) + 1;
+        }, (error, committed, snapshot) => {
+            if (error) console.error("❌ Kayıt hatası:", error);
+            else if (committed) console.log(`✅ ${name} için ${pos} başarıyla güncellendi.`);
+        });
     };
 
-    updatePos(n1, 'gold');   // Şampiyon
-    updatePos(n2, 'silver'); // İkinci
-    updatePos(n3, 'bronze'); // Üçüncü
-    updatePos(n4, 'fourth'); // Dördüncü
+    updatePos(n1, 'gold');
+    updatePos(n2, 'silver');
+    updatePos(n3, 'bronze');
+    updatePos(n4, 'fourth');
 };
 
 // ========================================================================
