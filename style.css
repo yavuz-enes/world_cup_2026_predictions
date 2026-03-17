@@ -170,109 +170,88 @@ table th { background-color: var(--table-header); color: var(--primary-color); }
 .tooltip-card strong { color: var(--text-color); }
 
 /* ======================================================================== */
-/* 📱 MOBİL UYUMLULUK (RESPONSIVE DESIGN) - GELİŞMİŞ VERSİYON */
+/* 📱 MOBİL UYUMLULUK (RESPONSIVE) - YANA KAYMALI VE TAM EKRAN TURLAR */
 /* ======================================================================== */
 
 @media (max-width: 768px) {
-    /* 1. HEADER (BAŞLIK VE BUTONLARIN DÜZELTİLMESİ) */
+    /* 1. HEADER LOGOLARI VE SAYAÇ (Aynı Hizada, Başlıktan Bağımsız) */
     body {
-        padding-top: 45px; /* Canlı sayaç için üstten nefes boşluğu */
+        padding-top: 50px; /* Üst paneli logolara ayırdık, gövdeyi aşağı ittik */
     }
 
     #live-counter {
         position: absolute !important;
-        top: 5px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important; /* Tam tepeye ve ortaya sabitler */
-        width: max-content;
-        z-index: 1000;
+        top: 10px !important;
+        left: 10px !important;
+        transform: none !important;
         font-size: 11px;
-        padding: 4px 10px;
+        z-index: 1000;
+        margin: 0;
     }
+
+    /* O 3 logoyu (Zar, Yenile, Ayarlar) sağ üste sabitliyoruz */
+    h1 button, .header-buttons, #btn-simulate, #btn-restart, #btn-settings {
+        position: absolute !important;
+        top: 8px !important;
+        z-index: 1000;
+        margin: 0 3px !important;
+    }
+    
+    /* İkonları sağdan sola doğru hizalama (Eğer id'leri bunlarsa) */
+    h1 button:nth-last-child(1) { right: 10px !important; } /* Ayarlar */
+    h1 button:nth-last-child(2) { right: 50px !important; } /* Yenile */
+    h1 button:nth-last-child(3) { right: 90px !important; } /* Zar */
 
     h1 {
-        font-size: 20px !important; /* Başlığı telefona uygun küçült */
+        margin-top: 15px !important;
+        font-size: 20px !important;
         text-align: center;
-        margin-top: 15px;
-        line-height: 1.4;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
     }
 
-    /* Zarlar, yenileme ve ayar butonlarını başlığın altına hizala */
-    h1 button, .header-buttons {
-        position: static !important;
-        float: none !important;
-        display: inline-flex;
-        justify-content: center;
-        margin: 0 5px;
+    /* 2. PLAY-OFF İSİMLERİ (Sığması için küçültüldü) */
+    #playoff-container .team-option {
+        padding: 5px !important;
     }
-
-    /* 2. NAVİGASYON (Aşama Butonları) */
-    nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 5px;
-        margin-bottom: 20px;
-    }
-    nav button {
-        flex: 1 1 45%;
-        font-size: 0.9em;
-        padding: 10px 5px;
-    }
-
-    /* 3. GRUPLAR VE SONUÇLAR (Tek Sütun) */
-    .grid-container, 
-    #groups-container, 
-    #results-container .result-grid,
-    #manual-thirds-grid {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 15px;
-    }
-
-    table {
-        font-size: 0.8em;
-        display: block;
-        overflow-x: auto;
+    #playoff-container .team-option span {
+        font-size: 0.70em !important; /* İsimler mobilde sığsın */
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    /* 4. ELEME AĞACI (BRACKET) - ALT ALTA LİSTE GÖRÜNÜMÜ */
-    /* Senin istediğin gibi, ekranı yana kaydırmak yerine turları alt alta dizer */
-    #bracket-container, 
-    #playoff-container {
+    /* 3. AĞAÇ (BRACKET) - TAM EKRAN YANA KAYMALI VE BOŞLUKSUZ */
+    #bracket-container {
         display: flex !important;
-        flex-direction: column !important; /* Yana değil, ALT ALTA dizer */
-        overflow-x: hidden !important;
-        align-items: center;
-        gap: 30px;
+        flex-direction: row !important; /* Yana doğru kayar */
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory; /* Kartların ekrana "şlak" diye oturmasını sağlar */
+        align-items: flex-start !important; 
+        padding-bottom: 20px;
     }
 
-    .round {
-        width: 100% !important;
-        min-width: 100% !important;
-        margin-right: 0 !important;
-        padding: 0 5px;
+    #bracket-container .round {
+        min-width: 100vw !important; /* Her tur (Örn: Son 16) tüm ekranı kaplar */
+        scroll-snap-align: start;
+        display: flex;
+        flex-direction: column; /* Maçları alt alta dizer */
+        gap: 10px !important; /* Aradaki o devasa boşlukları ezer, sadece 10px bırakır */
+        padding: 0 15px;
         box-sizing: border-box;
+        justify-content: flex-start !important;
+        margin-right: 0 !important;
     }
 
-    /* Maçlar arasındaki devasa boşlukları mobilde sıfırla */
-    .match-pair, .knockout-match {
-        margin: 10px 0 !important;
+    /* Ağaç yapısındaki gruplayıcı divleri devre dışı bırakıp boşlukları siliyoruz */
+    #bracket-container .match-pair {
+        display: contents; /* İçindeki maçları direkt round div'ine bağlar */
+    }
+
+    #bracket-container .knockout-match {
+        margin: 0 !important;
         min-height: auto !important;
     }
 
-    /* Final kısmını ortala */
-    .final-column {
-        margin-top: 20px;
-        align-items: center;
-    }
-
-    /* 5. DİĞER DÜZELTMELER */
+    /* 4. TOOLTIP (Bilgi Kartı) */
     #team-tooltip {
         position: fixed !important;
         bottom: 20px !important;
