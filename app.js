@@ -800,11 +800,13 @@ function renderResults() {
     const third = bracket.thirdPlace[0].w;
     const fourth = bracket.thirdPlace[0].t1 === third ? bracket.thirdPlace[0].t2 : bracket.thirdPlace[0].t1;
 
-    // YENİ: İlk 4 takımı veritabanına gönder
-    if (!window.hasSavedChampion) {
+    // ✅ DÜZELTME: window yerine localStorage kontrolü yapıyoruz
+    const hasVoted = localStorage.getItem('wc2026_voted');
+
+    if (!hasVoted) {
         if (typeof saveGlobalStats === "function") {
             saveGlobalStats(champ, runnerUp, third, fourth);
-            window.hasSavedChampion = true; // Sadece 1 kere oy sayar
+            localStorage.setItem('wc2026_voted', 'true'); // Kalıcı olarak oy verildi işaretle
         }
     }
 
