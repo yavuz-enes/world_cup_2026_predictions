@@ -170,15 +170,26 @@ table th { background-color: var(--table-header); color: var(--primary-color); }
 .tooltip-card strong { color: var(--text-color); }
 
 /* ======================================================================== */
-/* 📱 MOBİL UYUMLULUK (RESPONSIVE DESIGN) - KUSURSUZ VERSİYON */
+/* 🍔 AKILLI MENÜ & BAĞIMSIZ KAYDIRMALI AĞAÇ SİSTEMİ */
 /* ======================================================================== */
 
-@media (max-width: 768px) {
-    /* --- 1. EN ÜST PANEL (Sayaç Solda, Logolar Sağda) --- */
-    body {
-        padding-top: 55px; /* Üst paneli sayaç ve logolara ayırdık */
-    }
+/* --- GENEL (MASAÜSTÜ) MENÜ AYARLARI --- */
+#smart-menu-wrapper {
+    position: absolute;
+    top: 25px;
+    right: 40px;
+    z-index: 1001;
+}
+#smart-burger-btn { display: none; } /* Masaüstünde burger ikonu gizli */
+#smart-dropdown { display: flex; gap: 15px; } /* Logolar yan yana */
+.header-buttons { display: none !important; } /* Eski boş kutuyu çöpe attık */
 
+
+/* --- SADECE MOBİL İÇİN KURALLAR --- */
+@media (max-width: 768px) {
+    body { padding-top: 55px; }
+
+    /* CANLI SAYAÇ */
     #live-counter {
         position: absolute !important;
         top: 15px !important;
@@ -189,89 +200,180 @@ table th { background-color: var(--table-header); color: var(--primary-color); }
         margin: 0;
     }
 
-    /* O kaybolan 3 logo (Zar, Yenile, Ayarlar) sayacın hizasında sağa dizildi */
-    h1 button, .header-buttons {
-        position: absolute !important;
-        top: 10px !important;
-        z-index: 1001;
+    h1 { margin-top: 30px !important; font-size: 20px !important; text-align: center; }
+
+    /* 🍔 MOBİL BURGER MENÜ GÖRÜNÜMÜ */
+    #smart-menu-wrapper {
+        top: 10px;
+        right: 15px;
+    }
+    #smart-burger-btn {
+        display: block; /* Mobilde ikonu göster */
+        background: transparent;
+        border: none;
+        color: var(--primary-color, #d4af37);
+        font-size: 32px;
+        cursor: pointer;
+        padding: 0 5px;
+    }
+    #smart-dropdown {
+        display: none; /* İlk başta kapalı */
+        position: absolute;
+        top: 45px;
+        right: 0;
+        background: #222;
+        flex-direction: column; /* Logoları alt alta diz */
+        gap: 15px;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        border: 1px solid #444;
+    }
+    #smart-dropdown.show {
+        display: flex; /* Butona basınca açılır */
+    }
+    #smart-dropdown button {
         margin: 0 !important;
-        display: inline-block !important; /* Gizlenmesini engeller */
-    }
-    
-    h1 button:nth-last-child(1) { right: 10px !important; }  /* Ayarlar Logosu */
-    h1 button:nth-last-child(2) { right: 55px !important; }  /* Yenile Logosu */
-    h1 button:nth-last-child(3) { right: 100px !important; } /* Zar Logosu */
-
-    h1 {
-        margin-top: 25px !important;
-        font-size: 22px !important;
-        text-align: center;
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 20px !important;
     }
 
-    /* --- 2. AŞAMA BUTONLARI (2x2 Kusursuz Kutu) --- */
-    nav {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important; /* Ekranı tam ortadan 2'ye böler */
-        gap: 10px !important;
-        padding: 10px !important;
-    }
-    nav button {
-        width: 100% !important;
-        margin: 0 !important;
-        font-size: 0.95em !important;
-        padding: 12px !important;
-    }
+    /* --- 4'LÜ AŞAMA BUTONLARI --- */
+    nav { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; padding: 10px !important; }
+    nav button { width: 100% !important; margin: 0 !important; font-size: 0.95em !important; padding: 12px !important; }
 
-    /* --- 3. TURNUVA AĞACI (Tam Ekran Kaymalı ve Boşluksuz) --- */
+    /* --- MUCİZEVİ ELEME AĞACI (BAĞIMSIZ DİKEY KAYDIRMA) --- */
     #bracket-container {
         display: flex !important;
-        flex-direction: row !important; /* Yana doğru kaydırma */
+        flex-direction: row !important;
         overflow-x: auto !important;
-        scroll-snap-type: x mandatory !important; /* Ekranı otomatik o tura kilitler */
+        scroll-snap-type: x mandatory !important;
         padding-bottom: 20px;
         scroll-behavior: smooth;
+        align-items: flex-start !important;
     }
     
     .round {
-        min-width: 100vw !important; /* Her tur (Son 16 vb) ekranın %100'ünü kaplar */
-        scroll-snap-align: start !important; /* Tam hizalama yapar */
+        min-width: 85vw !important;
+        width: 85vw !important;
+        max-height: 60vh !important; 
+        overflow-y: auto !important; 
+        scroll-snap-align: center !important;
+        
+        /* 🚨 YENİ EKLENEN KISIM: Alt takımın kesilmemesi için ekstra boşluk 🚨 */
+        padding: 0 10px 50px 10px !important; 
+        
+        margin-right: 10vw !important;
         display: flex !important;
         flex-direction: column !important;
-        padding: 0 15px !important;
-        box-sizing: border-box !important;
-        justify-content: flex-start !important;
     }
 
-    /* Masaüstü görünümündeki devasa dikey boşlukları burada yok ediyoruz */
-    .match-pair {
-        display: block !important;
-        margin: 0 !important;
-    }
-    .knockout-match {
-        margin: 5px 0 !important; /* Maçlar arası boşluk kalktı, sıkıca dizildi */
-        min-height: auto !important;
+    /* Maçların arasını sıkılaştırıyoruz */
+    .match-pair { margin: 0 !important; }
+    .knockout-match { margin: 0 0 10px 0 !important; min-height: 40px !important; }
+
+    /* 🚨 ÇİZGİLER TAMAMEN KALDIRILDI 🚨 */
+    .knockout-match::before, .knockout-match::after, 
+    .match-pair::before, .match-pair::after {
+        display: none !important; 
     }
 
-    .final-column {
-        justify-content: flex-start !important;
-    }
-    .third-place-match {
-        margin-top: 20px !important;
-    }
+    .final-column { min-width: 85vw !important; margin-right: 0 !important; }
 
-    /* --- 4. PLAY-OFF İSİM BOYUTLARI VE TOOLTIP --- */
-    #playoff-container .team-option span {
-        font-size: 0.75em !important;
-    }
-
+    /* --- MİNİ TOOLTIP --- */
     #team-tooltip {
         position: fixed !important;
-        bottom: 20px !important;
+        bottom: 15px !important;
         top: auto !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
-        width: 90% !important;
-        z-index: 10000;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        width: 70% !important;
+        padding: 8px 12px !important;
+        font-size: 0.8em !important;
+        border-radius: 8px !important;
+    }
+    /* 🚨 BÜYÜK FİNAL YAZISINI GERİ GETİREN KOD 🚨 */
+    .final-column > div {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        width: 100%;
+    }
+    .final-column h3.round-title {
+        display: block !important;
+        position: relative !important; 
+        top: 0 !important;
+        margin-bottom: 20px !important; 
+        text-align: center !important;
+        width: 100% !important;
+    }
+    /* --- 4. PLAY-OFF MOBİL DÜZELTMESİ (AĞACA DOKUNMAZ) --- */
+    #playoff-container .card > div {
+        display: flex !important;
+        flex-direction: column !important; 
+        min-width: 100% !important; 
+        align-items: center !important;
+    }
+
+    #playoff-container .round {
+        min-width: 100% !important; 
+        width: 100% !important;
+        margin-right: 0 !important;
+        margin-bottom: 20px !important; 
+        padding: 0 10px !important;
+        max-height: none !important; /* Ağaçtaki kaydırma burayı bozmasın diye sıfırlıyoruz */
+        overflow-y: visible !important;
+    }
+
+    #playoff-container .team-option {
+        display: flex !important;
+        justify-content: flex-start !important; 
+        align-items: center !important;
+        padding: 8px 10px !important;
+    }
+
+    #playoff-container .team-option span {
+        font-size: 0.85em !important;
+        margin-left: 8px !important; 
+        white-space: normal !important; 
+        line-height: 1.2 !important;
+    }
+    /* --- 5. BİLDİRİM (MODAL) EKRANINI KÜÇÜLTME --- */
+    .modal-content {
+        width: 85% !important; /* Ekranı tam kaplamasın, yanlardan boşluk kalsın */
+        margin: 30% auto !important; /* Yukarıdan biraz daha aşağı inip ortalansın */
+        padding: 20px !important; /* O devasa 30px iç boşluğu kıstık */
+        border-radius: 12px !important;
+    }
+
+    .modal-content h2 {
+        font-size: 1.3em !important; /* Başlığı küçülttük */
+        margin-top: 5px !important;
+    }
+
+    .modal-content p, .setting-group label {
+        font-size: 0.9em !important; /* Yazıları mobilde okunacak kıvama getirdik */
+    }
+
+    .close-modal {
+        top: 10px !important;
+        right: 15px !important;
+        font-size: 24px !important; /* Çarpı (X) işaretini biraz küçülttük */
+    }
+
+    .btn-group .action-btn {
+        padding: 8px 10px !important; /* Ayarlar içindeki butonları daralttık */
+        font-size: 0.9em !important;
+    }
+    /* --- 6. MODERN AKSİYON BUTONLARI (Alt Alta Geçişler vs.) --- */
+    .action-btn {
+        width: 85% !important; /* Ekranı tam kaplamasını engeller, %85'ine yayılır */
+        max-width: 350px !important; /* Çok geniş telefonlarda aşırı uzamasını durdurur */
+        margin: 25px auto !important; /* Butonu tam ekranın ortasına hizalar ve üstten/alttan boşluk verir */
+        border-radius: 12px !important; /* Modern ve yumuşak köşeler */
+        display: block !important;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3) !important; /* Hafif altın sarısı parlama/gölge efekti */
+        padding: 16px !important; /* Yazının etrafında daha ferah bir boşluk */
     }
 }
