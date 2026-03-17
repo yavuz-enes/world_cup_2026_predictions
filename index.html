@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Dünya Kupası Tahmin Oyunu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="live-counter">
+        <span class="pulse-dot"></span>
+        <span id="online-count">Bağlanıyor...</span>
+    </div>
+
+    <style>
+        #live-counter {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: none; /* Tıklamayı engeller, alttaki butonlara basılabilir */
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #25D366;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #25D366;
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(37, 211, 102, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+        /* Karanlık modda daha belirgin olması için */
+        .dark-mode #live-counter {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--primary-color);
+        }
+    </style>
+    <header style="position: relative;">
+        <h1>🏆 2026 Dünya Kupası Tahmin Oyunu</h1>
+        
+        <div class="header-actions">
+            <button id="btn-simulate" class="icon-btn" title="Kalan Maçları Simüle Et" onclick="runSimulation()" style="font-size: 1.3em;">🎲</button>
+            <button id="btn-restart" class="icon-btn restart-btn" title="Yeniden Başlat">🔄</button>
+            <button id="btn-settings" class="icon-btn settings-btn" title="Ayarlar" onclick="document.getElementById('settings-modal').style.display='block'">⚙️</button>
+        </div>
+
+        <nav>
+            <button id="nav-stage1" onclick="switchStage(1)" class="active">1. Play-off</button>
+            <button id="nav-stage2" onclick="switchStage(2)" disabled>2. Gruplar</button>
+            <button id="nav-stage3" onclick="switchStage(3)" disabled>3. Son 32</button>
+            <button id="nav-stage4" onclick="switchStage(4)" disabled>4. Sonuçlar</button>
+        </nav>
+    </header>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="document.getElementById('settings-modal').style.display='none'">&times;</span>
+            <h2 style="color:var(--primary-color); margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:10px;">⚙️ Ayarlar</h2>
+            
+            <div class="setting-group">
+                <label>Tema Seçimi:</label>
+                <div class="btn-group">
+                    <button id="theme-light" class="action-btn" onclick="setTheme('light')">☀️ Aydınlık</button>
+                    <button id="theme-dark" class="action-btn" onclick="setTheme('dark')">🌙 Karanlık</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>Grup Tahmin Modu:</label>
+                <p style="font-size:0.8em; color:var(--text-muted); margin-top:0;">Dikkat: Modu değiştirmek mevcut grup tahminlerini sıfırlar!</p>
+                <div class="btn-group">
+                    <button id="mode-quick" class="action-btn" onclick="changeGroupMode('quick')">⚡ Hızlı (1-X-2)</button>
+                    <button id="mode-score" class="action-btn" onclick="changeGroupMode('score')">📝 Detaylı (Skor)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="modal" style="z-index: 100000;">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <h3 id="custom-modal-title" style="color:var(--primary-color); margin-top:0;">Bildirim</h3>
+            <p id="custom-modal-message" style="margin: 20px 0; font-size: 1.1em; color:var(--text-color);"></p>
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px;">
+                <button id="custom-modal-btn-cancel" class="action-btn" style="margin:0; background:transparent; border: 1px solid var(--border-color); color:var(--text-color); display:none;">İptal</button>
+                <button id="custom-modal-btn-ok" class="action-btn" style="margin:0;">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <section id="stage1" class="stage active">
+            <h2>Play-off Aşaması (6 Yol)</h2>
+            <div id="playoff-container" class="grid-container"></div>
+            <button id="btn-complete-playoffs" class="action-btn">Play-off'ları Tamamla ve Gruplara Geç</button>
+        </section>
+
+        <section id="stage2" class="stage">
+            <h2>Grup Aşaması (A - L)</h2>
+            <div id="groups-main-screen">
+                <div id="groups-container" class="grid-container"></div>
+                <button id="btn-generate-knockouts" class="action-btn">Son 32 Ağacını Oluştur</button>
+            </div>
+
+            <div id="manual-thirds-screen" style="display:none; background:var(--card-bg); padding:30px; border-radius:10px; border:1px solid var(--primary-color); text-align:center;">
+                <h2 style="color:var(--primary-color);">En İyi 8 Üçüncüyü Seçin</h2>
+                <p style="color:var(--text-muted); margin-bottom:20px;">Puan eşitliği olan takımlar arasından Son 32'ye çıkacakları tamamlayın. Seçilenler: <strong id="thirds-count" style="color:var(--text-color); font-size:1.2em;">0</strong> / 8</p>
+                <div id="manual-thirds-grid" style="display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin-bottom:30px;"></div>
+                <button id="btn-confirm-thirds" class="action-btn" disabled>Ağacı Oluştur ve Son 32'ye Geç</button>
+                <button onclick="document.getElementById('manual-thirds-screen').style.display='none'; document.getElementById('groups-main-screen').style.display='block';" class="action-btn" style="background:transparent; border:1px solid var(--border-color); color:var(--text-color); margin-top:10px;">Geri Dön</button>
+            </div>
+        </section>
+
+<section id="stage3" class="stage">
+            <h2>Eleme Ağacı</h2>
+            <div class="bracket-container" id="bracket-container"></div>
+            </section>
+
+        <section id="stage4" class="stage">
+            <h2>Turnuva Özeti</h2>
+            <div id="results-container" class="results-container"></div>
+        </section>
+    </main>
+
+    <div id="team-tooltip" class="tooltip-card"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
