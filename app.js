@@ -53,7 +53,7 @@ db.ref('.info/connected').on('value', (snapshot) => {
 
 onlineRef.on('value', (snapshot) => {
     const realCount = snapshot.numChildren();
-    const fakeCount = realCount + 6;
+    const fakeCount = realCount + 2;
 
     const counterText = document.getElementById('online-count');
     if (counterText) {
