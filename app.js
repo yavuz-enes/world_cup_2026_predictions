@@ -12,11 +12,9 @@ const firebaseConfig = {
     measurementId: "G-B30ZLX9LN1"
 };
 
-// Firebase'i Başlat
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// YENİ: İlk 4'ü veritabanına kaydetme fonksiyonu (Kimlik kodları yerine gerçek İsimleri yollar)
 window.saveGlobalStats = function (t1Id, t2Id, t3Id, t4Id) {
     const getTName = (id) => getTeamData(id).name;
     const n1 = getTName(t1Id), n2 = getTName(t2Id), n3 = getTName(t3Id), n4 = getTName(t4Id);
@@ -44,22 +42,18 @@ window.saveGlobalStats = function (t1Id, t2Id, t3Id, t4Id) {
 // 👥 CANLI KULLANICI SAYACI (PRESENCE)
 // ========================================================================
 const onlineRef = db.ref('online_users');
-const myUserRef = onlineRef.push(); // Bu tarayıcı için eşsiz bir anahtar açar
+const myUserRef = onlineRef.push();
 
-// Bağlantı durumunu kontrol et
 db.ref('.info/connected').on('value', (snapshot) => {
     if (snapshot.val() === true) {
-        // Bağlandığımızda veritabanına "buradayım" de
         myUserRef.set(true);
-        // Sekme kapandığında veya internet koptuğunda bu veriyi SİL
         myUserRef.onDisconnect().remove();
     }
 });
 
-// Toplam sayıyı dinle ve ekrana yaz (+12 hilesiyle!)
 onlineRef.on('value', (snapshot) => {
     const realCount = snapshot.numChildren();
-    const fakeCount = realCount + 6; // İstediğin 12 kişilik bonus
+    const fakeCount = realCount + 6;
 
     const counterText = document.getElementById('online-count');
     if (counterText) {
@@ -71,22 +65,15 @@ onlineRef.on('value', (snapshot) => {
 // 🔊 MİKRO SES EFEKTLERİ (UI SOUNDS)
 // ========================================================================
 const uiSounds = {
-    // Menü geçişleri için hafif, tok bir 'tık' sesi
     click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
-
-    // Maç kazananı seçildiğinde çıkan tatlı bir 'pop' sesi
     select: new Audio('https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3'),
-
-    // Şampiyon belli olduğunda çalacak stadyum/alkış sesi
     cheer: new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3')
 };
 
-// Sesler kullanıcıyı sağır etmesin diye seviyelerini kısıyoruz (0.1 en kısık, 1.0 en yüksek)
 uiSounds.click.volume = 0.2;
 uiSounds.select.volume = 0.3;
 uiSounds.cheer.volume = 0.5;
 
-// Sesi çağıran ana fonksiyon
 window.playSound = function (soundName) {
     if (uiSounds[soundName]) {
         uiSounds[soundName].currentTime = 0; // Hızlı hızlı tıklanırsa sesi başa sarıp tekrar çalar
@@ -98,115 +85,91 @@ window.playSound = function (soundName) {
 // 🌍 1. TAKIMLARI VE BAYRAKLARI BURAYA EKLEYİN
 // ========================================================================
 const CUSTOM_TEAMS = {
-    // --- A GRUBU ---
     "A1": { name: "Meksika", flag: "https://flagcdn.com/w40/mx.png" },
     "A2": { name: "Güney Afrika", flag: "https://flagcdn.com/w40/za.png" },
     "A3": { name: "Güney Kore", flag: "https://flagcdn.com/w40/kr.png" },
-    // A4 Play-off'tan gelecek
 
-    // --- B GRUBU ---
     "B1": { name: "Kanada", flag: "https://flagcdn.com/w40/ca.png" },
     "B2": { name: "Katar", flag: "https://flagcdn.com/w40/qa.png" },
     "B3": { name: "İsviçre", flag: "https://flagcdn.com/w40/ch.png" },
-    // B4 Play-off'tan gelecek
 
-    // --- C GRUBU ---
     "C1": { name: "Brezilya", flag: "https://flagcdn.com/w40/br.png" },
     "C2": { name: "Fas", flag: "https://flagcdn.com/w40/ma.png" },
     "C3": { name: "Haiti", flag: "https://flagcdn.com/w40/ht.png" },
     "C4": { name: "İskoçya", flag: "https://flagcdn.com/w40/gb-sct.png" },
 
-    // --- D GRUBU ---
     "D1": { name: "ABD", flag: "https://flagcdn.com/w40/us.png" },
     "D2": { name: "Paraguay", flag: "https://flagcdn.com/w40/py.png" },
     "D3": { name: "Avustralya", flag: "https://flagcdn.com/w40/au.png" },
-    // D4 Play-off'tan gelecek
 
-    // --- E GRUBU ---
     "E1": { name: "Almanya", flag: "https://flagcdn.com/w40/de.png" },
     "E2": { name: "Curaçao", flag: "https://flagcdn.com/w40/cw.png" },
     "E3": { name: "Fildişi Sahili", flag: "https://flagcdn.com/w40/ci.png" },
     "E4": { name: "Ekvador", flag: "https://flagcdn.com/w40/ec.png" },
 
-    // --- F GRUBU ---
     "F1": { name: "Hollanda", flag: "https://flagcdn.com/w40/nl.png" },
     "F2": { name: "Japonya", flag: "https://flagcdn.com/w40/jp.png" },
     "F3": { name: "Tunus", flag: "https://flagcdn.com/w40/tn.png" },
-    // F4 Play-off'tan gelecek
 
-    // --- G GRUBU ---
     "G1": { name: "Belçika", flag: "https://flagcdn.com/w40/be.png" },
     "G2": { name: "Mısır", flag: "https://flagcdn.com/w40/eg.png" },
     "G3": { name: "İran", flag: "https://flagcdn.com/w40/ir.png" },
     "G4": { name: "Yeni Zelanda", flag: "https://flagcdn.com/w40/nz.png" },
 
-    // --- H GRUBU ---
     "H1": { name: "İspanya", flag: "https://flagcdn.com/w40/es.png" },
     "H2": { name: "Yeşil Burun Adaları", flag: "https://flagcdn.com/w40/cv.png" },
     "H3": { name: "Suudi Arabistan", flag: "https://flagcdn.com/w40/sa.png" },
     "H4": { name: "Uruguay", flag: "https://flagcdn.com/w40/uy.png" },
 
-    // --- I GRUBU ---
     "I1": { name: "Fransa", flag: "https://flagcdn.com/w40/fr.png" },
     "I2": { name: "Senegal", flag: "https://flagcdn.com/w40/sn.png" },
     "I3": { name: "Norveç", flag: "https://flagcdn.com/w40/no.png" },
-    // I4 Play-off'tan gelecek
 
-    // --- J GRUBU ---
     "J1": { name: "Arjantin", flag: "https://flagcdn.com/w40/ar.png" },
     "J2": { name: "Cezayir", flag: "https://flagcdn.com/w40/dz.png" },
     "J3": { name: "Avusturya", flag: "https://flagcdn.com/w40/at.png" },
     "J4": { name: "Ürdün", flag: "https://flagcdn.com/w40/jo.png" },
 
-    // --- K GRUBU ---
     "K1": { name: "Portekiz", flag: "https://flagcdn.com/w40/pt.png" },
     "K2": { name: "Özbekistan", flag: "https://flagcdn.com/w40/uz.png" },
     "K3": { name: "Kolombiya", flag: "https://flagcdn.com/w40/co.png" },
-    // K4 Play-off'tan gelecek
 
-    // --- L GRUBU ---
     "L1": { name: "İngiltere", flag: "https://flagcdn.com/w40/gb-eng.png" },
     "L2": { name: "Hırvatistan", flag: "https://flagcdn.com/w40/hr.png" },
     "L3": { name: "Gana", flag: "https://flagcdn.com/w40/gh.png" },
     "L4": { name: "Panama", flag: "https://flagcdn.com/w40/pa.png" },
 
-    // --- PLAY-OFF YOL 1 (Hedef: A Grubu) ---
+
     "PO1_T1": { name: "Çekya", flag: "https://flagcdn.com/w40/cz.png" },
     "PO1_T2": { name: "İrlanda", flag: "https://flagcdn.com/w40/ie.png" },
     "PO1_T3": { name: "Danimarka", flag: "https://flagcdn.com/w40/dk.png" },
     "PO1_T4": { name: "Kuzey Makedonya", flag: "https://flagcdn.com/w40/mk.png" },
 
-    // --- PLAY-OFF YOL 2 (Hedef: B Grubu) ---
     "PO2_T1": { name: "Galler", flag: "https://flagcdn.com/w40/gb-wls.png" },
     "PO2_T2": { name: "Bosna-Hersek", flag: "https://flagcdn.com/w40/ba.png" },
     "PO2_T3": { name: "İtalya", flag: "https://flagcdn.com/w40/it.png" },
     "PO2_T4": { name: "Kuzey İrlanda", flag: "https://flagcdn.com/w40/gb-nir.png" },
 
-    // --- PLAY-OFF YOL 3 (Hedef: D Grubu) ---
     "PO3_T1": { name: "Slovakya", flag: "https://flagcdn.com/w40/sk.png" },
     "PO3_T2": { name: "Kosova", flag: "https://flagcdn.com/w40/xk.png" },
     "PO3_T3": { name: "Türkiye", flag: "https://flagcdn.com/w40/tr.png" },
     "PO3_T4": { name: "Romanya", flag: "https://flagcdn.com/w40/ro.png" },
 
-    // --- PLAY-OFF YOL 4 (Hedef: F Grubu) ---
     "PO4_T1": { name: "Ukrayna", flag: "https://flagcdn.com/w40/ua.png" },
     "PO4_T2": { name: "İsveç", flag: "https://flagcdn.com/w40/se.png" },
     "PO4_T3": { name: "Polonya", flag: "https://flagcdn.com/w40/pl.png" },
     "PO4_T4": { name: "Arnavutluk", flag: "https://flagcdn.com/w40/al.png" },
 
-    // --- PLAY-OFF YOL 5 (Hedef: I Grubu) ---
     "PO5_T1": { name: "Irak", flag: "https://flagcdn.com/w40/iq.png" },
     "PO5_T4": { name: "Bolivya", flag: "https://flagcdn.com/w40/bo.png" },
     "PO5_T3": { name: "Surinam", flag: "https://flagcdn.com/w40/sr.png" },
     "PO5_T2": { name: "Bay Geçer", flag: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/40px-International_Flag_of_Planet_Earth.svg.png" },
 
-    // --- PLAY-OFF YOL 6 (Hedef: K Grubu) ---
     "PO6_T1": { name: "Kongo DC", flag: "https://flagcdn.com/w40/cd.png" },
     "PO6_T4": { name: "Yeni Kaledonya", flag: "https://flagcdn.com/w40/nc.png" },
     "PO6_T3": { name: "Jamaika", flag: "https://flagcdn.com/w40/jm.png" },
     "PO6_T2": { name: "Bay Geçer", flag: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/40px-International_Flag_of_Planet_Earth.svg.png" }
 };
-// ... KENDİ TAKIMLARININ OLDUĞU "CUSTOM_TEAMS" BÖLÜMÜ YUKARIDA AYNI KALACAK ...
 
 function getTeamData(teamId) {
     if (!teamId) return { name: "Bekleniyor...", flag: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/40px-International_Flag_of_Planet_Earth.svg.png" };
@@ -215,7 +178,7 @@ function getTeamData(teamId) {
 }
 
 // ========================================================================
-// ⚙️ YENİ: ÖZEL BİLDİRİM (MODAL) YÖNETİCİSİ
+// ⚙️ ÖZEL BİLDİRİM (MODAL) YÖNETİCİSİ
 // ========================================================================
 function showCustomAlert(message) {
     document.getElementById('custom-modal-title').innerText = 'Bildirim';
@@ -261,8 +224,8 @@ let playoffs = [];
 let groups = {};
 let bracket = { r32: [], r16: [], qf: [], sf: [], final: [], thirdPlace: [] };
 let currentStage = 1;
-let groupMode = 'quick'; // Varsayılan
-let currentTheme = 'light'; // Varsayılan
+let groupMode = 'quick';
+let currentTheme = 'light';
 let manualSelectedThirds = [];
 
 function initializeData() {
@@ -271,7 +234,6 @@ function initializeData() {
         let sf1Winner = null;
         let sf2Winner = null;
 
-        // YENİ: Bay Geçer Kontrolü (Rakibi otomatik Play-off finaline atar)
         if (CUSTOM_TEAMS[`PO${i}_T1`] && CUSTOM_TEAMS[`PO${i}_T1`].name === "Bay Geçer") sf1Winner = `PO${i}_T2`;
         if (CUSTOM_TEAMS[`PO${i}_T2`] && CUSTOM_TEAMS[`PO${i}_T2`].name === "Bay Geçer") sf1Winner = `PO${i}_T1`;
 
@@ -297,21 +259,17 @@ function initializeData() {
 }
 
 function saveData() {
-    // DÜZELTME: Oyun verilerini ayrı, kullanıcı ayarlarını ayrı kasaya kaydediyoruz
     localStorage.setItem('wc2026_save', JSON.stringify({ playoffs, groups, bracket, currentStage, manualSelectedThirds }));
     localStorage.setItem('wc2026_prefs', JSON.stringify({ currentTheme, groupMode }));
 }
 
 function loadData() {
-    // 1. Önce Ayarları (Tema ve Mod) Yükle
     const prefs = localStorage.getItem('wc2026_prefs');
     if (prefs) {
         const parsedPrefs = JSON.parse(prefs);
         currentTheme = parsedPrefs.currentTheme || 'light';
         groupMode = parsedPrefs.groupMode || 'quick';
     } else {
-        // 🌟 YENİ: Kullanıcı siteye ilk kez giriyorsa, telefonun/bilgisayarın 
-        // varsayılan temasını (Gece/Gündüz) otomatik algıla!
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             currentTheme = 'dark';
         } else {
@@ -320,7 +278,6 @@ function loadData() {
         groupMode = 'quick';
     }
 
-    // 2. Sonra Turnuva Verilerini Yükle
     const saved = localStorage.getItem('wc2026_save');
     if (saved) {
         const parsed = JSON.parse(saved);
@@ -334,7 +291,7 @@ function loadData() {
 document.getElementById('btn-restart').addEventListener('click', () => {
     showCustomConfirm("Tüm tahminleriniz silinecek...", () => {
         localStorage.removeItem('wc2026_save');
-        localStorage.removeItem('wc2026_voted'); // ✅ Bunu da ekle
+        localStorage.removeItem('wc2026_voted');
         location.reload();
     });
 });
@@ -344,13 +301,13 @@ function resetKnockouts() {
     manualSelectedThirds = [];
     document.getElementById('nav-stage3').disabled = true;
     document.getElementById('nav-stage4').disabled = true;
-    window.hasSavedChampion = false; // YENİ EKLENDİ (Yeni oyun için kilidi açar)
-    localStorage.removeItem('wc2026_voted'); // ✅ Kilidi kaldır ki yeni şampiyonu oylayabilsin
+    window.hasSavedChampion = false;
+    localStorage.removeItem('wc2026_voted');
     window.hasSavedChampion = false;
 }
 
 window.switchStage = function (stageNum) {
-    playSound('click'); // 🔊 YENİ EKLENEN: Menü butonları tık sesi
+    playSound('click');
     currentStage = stageNum; saveData();
     document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -363,7 +320,6 @@ window.switchStage = function (stageNum) {
     if (stageNum === 4) { document.getElementById('nav-stage4').disabled = false; renderResults(); }
 }
 
-// --- AYARLAR VE TEMA ---
 window.setTheme = function (theme) {
     currentTheme = theme;
     if (theme === 'dark') document.body.classList.add('dark-mode');
@@ -391,7 +347,6 @@ function updateSettingsUI() {
     document.getElementById('mode-score').classList.toggle('active-setting', groupMode === 'score');
 }
 
-// Modal Kapatma Olayları
 window.onclick = function (event) {
     if (event.target == document.getElementById('settings-modal')) document.getElementById('settings-modal').style.display = "none";
     if (event.target == document.getElementById('custom-modal')) document.getElementById('custom-modal').style.display = "none";
@@ -410,7 +365,7 @@ function renderTeamOption(teamId, matchId, isSelected, onClickFn) {
     const extraStyle = isBayGecer ? 'opacity: 0.4; cursor: not-allowed;' : '';
     return `<div class="team-option ${selectedClass}" id="${matchId}" ${clickAttr} ${hoverAttr} style="${extraStyle}">${renderTeamContent(teamId)}</div>`;
 }
-// --- AŞAMA 1: PLAY-OFF ---
+
 function renderPlayoffs() {
     const container = document.getElementById('playoff-container');
     container.innerHTML = '';
@@ -474,7 +429,6 @@ document.getElementById('btn-complete-playoffs').addEventListener('click', () =>
     switchStage(2);
 });
 
-// --- AŞAMA 2: GRUPLAR ---
 function initGroups() {
     const container = document.getElementById('groups-container');
     container.innerHTML = '';
@@ -530,7 +484,6 @@ function updateTable(g) {
     group.teams.forEach(t => stats[t] = { id: t, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 });
 
     group.matches.forEach(m => {
-        // GÜVENLİK DUVARI: Takım boşsa (undefined) hesaplamayı atlar, çökmeyi engeller!
         if (m.t1 && m.t2 && stats[m.t1] && stats[m.t2]) {
             if (groupMode === 'score' && m.s1 !== null && m.s2 !== null) {
                 stats[m.t1].p++; stats[m.t2].p++; stats[m.t1].gf += m.s1; stats[m.t2].gf += m.s2; stats[m.t1].ga += m.s2; stats[m.t2].ga += m.s1;
@@ -557,7 +510,6 @@ function updateTable(g) {
     }
 }
 
-// --- AŞAMA 2.5: EN İYİ 3.LERİ SEÇME EKRANI ---
 document.getElementById('btn-generate-knockouts').addEventListener('click', () => {
     let thirds = [];
     groupsList.forEach(g => {
@@ -673,7 +625,6 @@ document.getElementById('btn-confirm-thirds').addEventListener('click', () => {
     if (manualSelectedThirds.length === 8) generateBracket();
 });
 
-// --- AŞAMA 3: ELEME AĞACINI OLUŞTURMA ---
 function generateBracket() {
     let firsts = {}, seconds = {}, thirds = [];
     groupsList.forEach(g => {
@@ -740,12 +691,10 @@ function generateBracket() {
     switchStage(3);
 }
 
-// --- YENİ: HAFIZALI VE OTOMATİK AŞAĞI KAYDIRMALI SEÇİM SİSTEMİ ---
 window.selectKnockoutWinner = function (round, matchIdx, teamId) {
     playSound('select');
     function isRoundComplete(r) { return bracket[r].every(m => m.w !== null); }
 
-    // Kurallar ve Uyarılar
     if (round === 'r16' && !isRoundComplete('r32')) { showCustomAlert("Lütfen önce Son 32 turundaki tüm maçları tamamlayın!"); return; }
     if (round === 'qf' && !isRoundComplete('r16')) { showCustomAlert("Lütfen önce Son 16 turundaki tüm maçları tamamlayın!"); return; }
     if (round === 'sf' && !isRoundComplete('qf')) { showCustomAlert("Lütfen önce Çeyrek Final turundaki tüm maçları tamamlayın!"); return; }
@@ -755,7 +704,6 @@ window.selectKnockoutWinner = function (round, matchIdx, teamId) {
     const rounds = ['r32', 'r16', 'qf', 'sf', 'final'];
     const currentRoundIdx = rounds.indexOf(round);
 
-    // Sonraki Turlara Aktarma İşlemleri
     if (round === 'sf') {
         const match = bracket.sf[matchIdx];
         const loserId = (match.t1 === teamId) ? match.t2 : match.t1;
@@ -772,7 +720,6 @@ window.selectKnockoutWinner = function (round, matchIdx, teamId) {
     if (round === 'thirdPlace') bracket['thirdPlace'][0].w = teamId;
     saveData();
 
-    // 🚨 1. AŞAMA: EKRAN YENİLENMEDEN ÖNCE KAYDIRMA ÇUBUĞUNUN YERİNİ HAFIZAYA AL
     const container = document.getElementById('bracket-container');
     const scrollLeft = container ? container.scrollLeft : 0;
     const roundScrolls = {};
@@ -782,9 +729,8 @@ window.selectKnockoutWinner = function (round, matchIdx, teamId) {
         });
     }
 
-    renderBracket(); // Ekranı baştan çiz (Bu işlem normalde ekranı en üste fırlatır)
+    renderBracket();
 
-    // 🚨 2. AŞAMA: EKRAN ÇİZİLDİĞİ AN KAYDIRMA YERİNİ GERİ YÜKLE (Zıplamayı Önler)
     const newContainer = document.getElementById('bracket-container');
     if (newContainer) {
         newContainer.scrollLeft = scrollLeft;
@@ -793,21 +739,18 @@ window.selectKnockoutWinner = function (round, matchIdx, teamId) {
         });
     }
 
-    // HER İKİ FİNAL BİTİNCE SONUÇLARA GEÇ
     if (bracket.final[0].w && bracket.thirdPlace[0].w) {
         playSound('cheer');
         setTimeout(() => { switchStage(4); }, 800);
         return;
     }
 
-    // 🚨 3. AŞAMA: İKİ MAÇ (BİR ÇİFT) BİTTİĞİNDE OTOMATİK AŞAĞI KAYDIR (SADECE MOBİL)
     let pairPartnerIdx = matchIdx % 2 === 0 ? matchIdx + 1 : matchIdx - 1;
     if (bracket[round][pairPartnerIdx] && bracket[round][matchIdx].w && bracket[round][pairPartnerIdx].w) {
 
         let nextPairIdx = matchIdx % 2 === 0 ? matchIdx + 2 : matchIdx + 1;
         let nextMatchElem = document.getElementById(`${round}-${nextPairIdx}-t1`);
 
-        // 📱 YENİ: Sadece ekran genişliği 768px veya altındaysa (yani telefonsa) kaydır
         if (nextMatchElem && window.innerWidth <= 768) {
             setTimeout(() => {
                 let matchBox = nextMatchElem.closest('.knockout-match') || nextMatchElem;
@@ -816,7 +759,6 @@ window.selectKnockoutWinner = function (round, matchIdx, teamId) {
         }
     }
 
-    // TUR BİTTİYSE YANA (SONRAKİ TURA) KAYDIR
     let nextColMap = { 'r32': 'r16', 'r16': 'qf', 'qf': 'sf', 'sf': 'final-col' };
     if (round !== 'final' && round !== 'thirdPlace' && isRoundComplete(round)) {
         let nextColId = 'round-col-' + nextColMap[round];
@@ -850,7 +792,6 @@ function renderBracket() {
     if (bracket.r32.length === 0) return;
     const container = document.getElementById('bracket-container');
 
-    // YENİ: FİNAL MAÇININ HİZALAMASI MERKEZE ALINDI
     let finalColumnHTML = `<div class="round final-column" id="round-col-final-col" style="justify-content: flex-start;">
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative;">
             <h3 class="round-title" style="color:var(--primary-color); position: absolute; top: 0; width: 100%; text-align: center;">🏆 BÜYÜK FİNAL</h3>
@@ -876,7 +817,6 @@ function renderBracket() {
     container.innerHTML = renderBracketColumn('Son 32', 'r32', bracket.r32) + renderBracketColumn('Son 16', 'r16', bracket.r16) + renderBracketColumn('Çeyrek Final', 'qf', bracket.qf) + renderBracketColumn('Yarı Final', 'sf', bracket.sf) + finalColumnHTML;
 }
 
-// --- AŞAMA 4: SONUÇLAR, KONFETİ VE GLOBAL HEATMAP ---
 function renderResults() {
     const container = document.getElementById('results-container');
     const champ = bracket.final[0].w;
@@ -884,13 +824,12 @@ function renderResults() {
     const third = bracket.thirdPlace[0].w;
     const fourth = bracket.thirdPlace[0].t1 === third ? bracket.thirdPlace[0].t2 : bracket.thirdPlace[0].t1;
 
-    // ✅ DÜZELTME: window yerine localStorage kontrolü yapıyoruz
     const hasVoted = localStorage.getItem('wc2026_voted');
 
     if (!hasVoted) {
         if (typeof saveGlobalStats === "function") {
             saveGlobalStats(champ, runnerUp, third, fourth);
-            localStorage.setItem('wc2026_voted', 'true'); // Kalıcı olarak oy verildi işaretle
+            localStorage.setItem('wc2026_voted', 'true');
         }
     }
 
@@ -918,7 +857,6 @@ function renderResults() {
         </div>
     `;
 
-    // YENİ: DÜNYANIN SEÇİMİ BAŞLIĞI
     html += `
         <div id="global-heatmap-container" style="margin-top: 50px; padding-top: 20px; border-top: 2px dashed var(--border-color);">
             <h3 style="color: var(--primary-color); text-align:center; margin-bottom: 20px;">🌍 DÜNYANIN SEÇİMİ (CANLI LİDERLİK TABLOSU)</h3>
@@ -930,14 +868,12 @@ function renderResults() {
 
     container.innerHTML = html;
 
-    // YENİ: Firebase'den İlk 4 İstatistiklerini Çek ve Modern Tabloya Bas
     if (typeof db !== 'undefined') {
         db.ref('global_stats').on('value', (snapshot) => {
             const data = snapshot.val();
             const heatmapDiv = document.getElementById('heatmap-content');
 
             if (data && heatmapDiv) {
-                // Verileri diziye çevir
                 const teamsArray = Object.keys(data).map(teamName => {
                     return {
                         name: teamName,
@@ -948,7 +884,6 @@ function renderResults() {
                     };
                 });
 
-                // Olimpiyat Sıralaması (Önce Altına, eşitse Gümüşe göre sırala)
                 teamsArray.sort((a, b) => b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze || b.fourth - a.fourth);
 
                 let tableHTML = `
@@ -966,7 +901,6 @@ function renderResults() {
                             <tbody>
                 `;
 
-                // İsimden Bayrak Bulan Mini Fonksiyon
                 const getFlagByName = (name) => {
                     for (let key in CUSTOM_TEAMS) {
                         if (CUSTOM_TEAMS[key].name === name) return CUSTOM_TEAMS[key].flag;
@@ -974,12 +908,10 @@ function renderResults() {
                     return "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/40px-International_Flag_of_Planet_Earth.svg.png";
                 };
 
-                // İlk 20 Takımı Göster
                 teamsArray.slice(0, 6).forEach((t, index) => {
                     const flagUrl = getFlagByName(t.name);
                     const bgClass = index % 2 === 0 ? 'background-color: rgba(0,0,0,0.1);' : 'background-color: transparent;';
 
-                    // Eğer 0 ise soluk yazsın, sayısı varsa parlasın
                     const goldStyle = t.gold > 0 ? 'font-weight:bold; color:#FFD700;' : 'color:var(--text-muted); opacity: 0.3;';
                     const silverStyle = t.silver > 0 ? 'font-weight:bold; color:#C0C0C0;' : 'color:var(--text-muted); opacity: 0.3;';
                     const bronzeStyle = t.bronze > 0 ? 'font-weight:bold; color:#CD7F32;' : 'color:var(--text-muted); opacity: 0.3;';
@@ -1008,7 +940,6 @@ function renderResults() {
         });
     }
 
-    // Konfeti Efekti
     var duration = 4 * 1000;
     var animationEnd = Date.now() + duration;
     var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 999999, disableForReducedMotion: true };
@@ -1081,12 +1012,6 @@ window.downloadBracket = function () {
         });
     }, 300);
 }
-
-// ========================================================================
-// 🎲 SİMÜLASYON MOTORU (YAPAY ZEKA VE RASTGELELİK)
-// ========================================================================
-
-// Takımların Güncel Kadro Değerlerine Göre Tahmini Güçleri (100 üzerinden)
 // ========================================================================
 // 🎲 SİMÜLASYON MOTORU (YAPAY ZEKA VE RASTGELELİK)
 // ========================================================================
@@ -1127,14 +1052,13 @@ const teamPowers = {
 function getTeamPower(teamId) {
     if (!teamId || teamId.startsWith('Bekleniyor') || teamId.startsWith('Belirsiz')) return 10;
     const teamName = getTeamData(teamId).name;
-    return teamPowers[teamName] || 60; // Listede unutulan takım olursa 60 gücünde sayılır
+    return teamPowers[teamName] || 60;
 }
 
 window.runSimulation = function () {
     showCustomAlert("Zarlar atılıyor... Kalan tüm maçlar güncel kadro değerlerine göre simüle ediliyor! 🎲");
 
     setTimeout(() => {
-        // 1. PLAY-OFF'LARI SİMÜLE ET
         playoffs.forEach(po => {
             if (!po.sf1Winner) { po.sf1Winner = (getTeamPower(po.sf1[0]) + Math.random() * 30) > (getTeamPower(po.sf1[1]) + Math.random() * 30) ? po.sf1[0] : po.sf1[1]; }
             if (!po.sf2Winner) { po.sf2Winner = (getTeamPower(po.sf2[0]) + Math.random() * 30) > (getTeamPower(po.sf2[1]) + Math.random() * 30) ? po.sf2[0] : po.sf2[1]; }
@@ -1146,7 +1070,6 @@ window.runSimulation = function () {
             }
         });
 
-        // EKSİK OLAN HAYATİ KOD BURASIYDI: Play-off'tan gelenleri maçlara yerleştir!
         groupsList.forEach(g => {
             const t = groups[g].teams;
             if (groups[g].matches.length === 6) {
@@ -1228,11 +1151,9 @@ window.runSimulation = function () {
         simulateRound('r32'); simulateRound('r16'); simulateRound('qf');
         simulateRound('sf'); simulateRound('thirdPlace'); simulateRound('final');
 
-        // 5. HER ŞEY BİTTİ, EKRANI YENİLE VE SONUCA GİT
         saveData();
         document.getElementById('custom-modal').style.display = "none";
 
-        // YENİ EKLENEN KOD: Tüm sekmelerin kilitlerini aç!
         document.getElementById('nav-stage2').disabled = false;
         document.getElementById('nav-stage3').disabled = false;
         document.getElementById('nav-stage4').disabled = false;
@@ -1257,7 +1178,6 @@ window.getHoverAttr = function (teamId) {
     const team = getTeamData(teamId);
     if (team.name === 'Bay Geçer') return '';
 
-    // Bilgisayarda mouse ile (hover), Mobilde basılı tutunca (500ms) açılır
     return `
         onmouseenter="if(window.innerWidth > 768) showTooltip('${teamId}', event)" 
         onmouseleave="if(window.innerWidth > 768) hideTooltip()"
@@ -1268,11 +1188,9 @@ window.getHoverAttr = function (teamId) {
     `;
 }
 
-// YENİ: Tooltip açıkken ekranda BÖŞ BİR YERE dokunulursa tooltip'i kapatır
 document.addEventListener('touchstart', function (e) {
     const tooltip = document.getElementById('team-tooltip');
     if (tooltip && tooltip.style.display === 'block') {
-        // Eğer dokunulan yer bir takım değilse ve tooltip'in kendisi değilse gizle
         if (!e.target.closest('.team-option') && !e.target.closest('#team-tooltip')) {
             hideTooltip();
         }
@@ -1411,19 +1329,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnRestart = document.getElementById('btn-restart');
     const btnSettings = document.getElementById('btn-settings');
 
-    // Eğer butonlar sayfada varsa işlemi yap
     if (btnSimulate && btnRestart && btnSettings) {
         const menuWrapper = document.createElement('div');
         menuWrapper.id = 'smart-menu-wrapper';
 
         const burgerBtn = document.createElement('button');
         burgerBtn.id = 'smart-burger-btn';
-        burgerBtn.innerHTML = '☰'; // Menü İkonu
+        burgerBtn.innerHTML = '☰';
 
         const dropdown = document.createElement('div');
         dropdown.id = 'smart-dropdown';
 
-        // Logoları yeni akıllı kutuya taşı
         dropdown.appendChild(btnSimulate);
         dropdown.appendChild(btnRestart);
         dropdown.appendChild(btnSettings);
@@ -1432,13 +1348,11 @@ document.addEventListener("DOMContentLoaded", () => {
         menuWrapper.appendChild(dropdown);
         document.body.appendChild(menuWrapper);
 
-        // Burger butona tıklayınca menüyü aç/kapat
         burgerBtn.addEventListener('click', (e) => {
             dropdown.classList.toggle('show');
             e.stopPropagation();
         });
 
-        // Ekranda boş bir yere tıklanırsa menüyü otomatik kapat
         document.addEventListener('click', (e) => {
             if (!menuWrapper.contains(e.target)) {
                 dropdown.classList.remove('show');
@@ -1450,9 +1364,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ========================================================================
 // 🌙 OTOMATİK GECE/GÜNDÜZ MODU DİNLEYİCİSİ
 // ========================================================================
-// Cihazın teması anlık değişirse site de otomatik ayak uydurur
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-    // Eğer kullanıcı ayarlardan manuel bir tema seçmediyse cihazı dinle
     const prefs = localStorage.getItem('wc2026_prefs');
     if (!prefs) {
         setTheme(event.matches ? 'dark' : 'light');
