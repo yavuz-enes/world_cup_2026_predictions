@@ -309,6 +309,15 @@ function loadData() {
         const parsedPrefs = JSON.parse(prefs);
         currentTheme = parsedPrefs.currentTheme || 'light';
         groupMode = parsedPrefs.groupMode || 'quick';
+    } else {
+        // 🌟 YENİ: Kullanıcı siteye ilk kez giriyorsa, telefonun/bilgisayarın 
+        // varsayılan temasını (Gece/Gündüz) otomatik algıla!
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            currentTheme = 'dark';
+        } else {
+            currentTheme = 'light';
+        }
+        groupMode = 'quick';
     }
 
     // 2. Sonra Turnuva Verilerini Yükle
@@ -1435,5 +1444,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 dropdown.classList.remove('show');
             }
         });
+    }
+});
+
+// ========================================================================
+// 🌙 OTOMATİK GECE/GÜNDÜZ MODU DİNLEYİCİSİ
+// ========================================================================
+// Cihazın teması anlık değişirse site de otomatik ayak uydurur
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    // Eğer kullanıcı ayarlardan manuel bir tema seçmediyse cihazı dinle
+    const prefs = localStorage.getItem('wc2026_prefs');
+    if (!prefs) {
+        setTheme(event.matches ? 'dark' : 'light');
     }
 });
