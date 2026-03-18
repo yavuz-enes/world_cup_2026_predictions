@@ -1,16 +1,15 @@
 // ========================================================================
-// 🌐 GLOBAL HEATMAP (FIREBASE VERİTABANI BAĞLANTISI)
+// FIREBASE VERİTABANI BAĞLANTISI
 // ========================================================================
-// BURAYA KENDİ KOPYALADIĞIN firebaseConfig BİLGİLERİNİ YAPIŞTIR:
 const firebaseConfig = {
-  apiKey: "AIzaSyA8qjnNRjuTHgyM1uLFhHVEYOixdN57bBk",
-  authDomain: "world-cup-2026-prediction.firebaseapp.com",
-  databaseURL: "https://world-cup-2026-prediction-default-rtdb.europe-west1.firebasedatabase.app/",
-  projectId: "world-cup-2026-prediction",
-  storageBucket: "world-cup-2026-prediction.firebasestorage.app",
-  messagingSenderId: "753709446647",
-  appId: "1:753709446647:web:f6e03d4f7edcbc339eeaf2",
-  measurementId: "G-B30ZLX9LN1"
+    apiKey: "AIzaSyA8qjnNRjuTHgyM1uLFhHVEYOixdN57bBk",
+    authDomain: "world-cup-2026-prediction.firebaseapp.com",
+    databaseURL: "https://world-cup-2026-prediction-default-rtdb.europe-west1.firebasedatabase.app/",
+    projectId: "world-cup-2026-prediction",
+    storageBucket: "world-cup-2026-prediction.firebasestorage.app",
+    messagingSenderId: "753709446647",
+    appId: "1:753709446647:web:f6e03d4f7edcbc339eeaf2",
+    measurementId: "G-B30ZLX9LN1"
 };
 
 // Firebase'i Başlat
@@ -18,15 +17,15 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // YENİ: İlk 4'ü veritabanına kaydetme fonksiyonu (Kimlik kodları yerine gerçek İsimleri yollar)
-window.saveGlobalStats = function(t1Id, t2Id, t3Id, t4Id) {
+window.saveGlobalStats = function (t1Id, t2Id, t3Id, t4Id) {
     const getTName = (id) => getTeamData(id).name;
     const n1 = getTName(t1Id), n2 = getTName(t2Id), n3 = getTName(t3Id), n4 = getTName(t4Id);
 
-    console.log("📊 Veritabanına gönderiliyor:", {n1, n2, n3, n4}); // Takip için
+    console.log("📊 Veritabanına gönderiliyor:", { n1, n2, n3, n4 }); // Takip için
 
     const updatePos = (name, pos) => {
         if (!name || name.startsWith('Bekleniyor') || name === 'Bay Geçer') return;
-        
+
         db.ref('global_stats/' + name + '/' + pos).transaction(count => {
             return (count || 0) + 1;
         }, (error, committed, snapshot) => {
@@ -59,14 +58,41 @@ db.ref('.info/connected').on('value', (snapshot) => {
 
 // Toplam sayıyı dinle ve ekrana yaz (+12 hilesiyle!)
 onlineRef.on('value', (snapshot) => {
-    const realCount = snapshot.numChildren(); 
+    const realCount = snapshot.numChildren();
     const fakeCount = realCount + 6; // İstediğin 12 kişilik bonus
-    
+
     const counterText = document.getElementById('online-count');
     if (counterText) {
         counterText.innerText = `${fakeCount} kişi şuan tahmin yapıyor`;
     }
 });
+
+// ========================================================================
+// 🔊 MİKRO SES EFEKTLERİ (UI SOUNDS)
+// ========================================================================
+const uiSounds = {
+    // Menü geçişleri için hafif, tok bir 'tık' sesi
+    click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+
+    // Maç kazananı seçildiğinde çıkan tatlı bir 'pop' sesi
+    select: new Audio('https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3'),
+
+    // Şampiyon belli olduğunda çalacak stadyum/alkış sesi
+    cheer: new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3')
+};
+
+// Sesler kullanıcıyı sağır etmesin diye seviyelerini kısıyoruz (0.1 en kısık, 1.0 en yüksek)
+uiSounds.click.volume = 0.2;
+uiSounds.select.volume = 0.3;
+uiSounds.cheer.volume = 0.5;
+
+// Sesi çağıran ana fonksiyon
+window.playSound = function (soundName) {
+    if (uiSounds[soundName]) {
+        uiSounds[soundName].currentTime = 0; // Hızlı hızlı tıklanırsa sesi başa sarıp tekrar çalar
+        uiSounds[soundName].play().catch(err => console.log("Tarayıcı sesi engelledi."));
+    }
+};
 
 // ========================================================================
 // 🌍 1. TAKIMLARI VE BAYRAKLARI BURAYA EKLEYİN
@@ -144,7 +170,7 @@ const CUSTOM_TEAMS = {
     "L3": { name: "Gana", flag: "https://flagcdn.com/w40/gh.png" },
     "L4": { name: "Panama", flag: "https://flagcdn.com/w40/pa.png" },
 
-// --- PLAY-OFF YOL 1 (Hedef: A Grubu) ---
+    // --- PLAY-OFF YOL 1 (Hedef: A Grubu) ---
     "PO1_T1": { name: "Çekya", flag: "https://flagcdn.com/w40/cz.png" },
     "PO1_T2": { name: "İrlanda", flag: "https://flagcdn.com/w40/ie.png" },
     "PO1_T3": { name: "Danimarka", flag: "https://flagcdn.com/w40/dk.png" },
@@ -195,30 +221,30 @@ function showCustomAlert(message) {
     document.getElementById('custom-modal-title').innerText = 'Bildirim';
     document.getElementById('custom-modal-message').innerText = message;
     document.getElementById('custom-modal-btn-cancel').style.display = 'none';
-    
+
     const modal = document.getElementById('custom-modal');
     const btnOk = document.getElementById('custom-modal-btn-ok');
-    
+
     modal.style.display = 'block';
-    btnOk.onclick = function() { modal.style.display = 'none'; };
+    btnOk.onclick = function () { modal.style.display = 'none'; };
 }
 
 function showCustomConfirm(message, onConfirmCallback) {
     document.getElementById('custom-modal-title').innerText = 'Onay Gerekli';
     document.getElementById('custom-modal-message').innerText = message;
     document.getElementById('custom-modal-btn-cancel').style.display = 'block';
-    
+
     const modal = document.getElementById('custom-modal');
     const btnOk = document.getElementById('custom-modal-btn-ok');
     const btnCancel = document.getElementById('custom-modal-btn-cancel');
-    
+
     modal.style.display = 'block';
-    
-    btnOk.onclick = function() {
+
+    btnOk.onclick = function () {
         modal.style.display = 'none';
-        if(onConfirmCallback) onConfirmCallback();
+        if (onConfirmCallback) onConfirmCallback();
     };
-    btnCancel.onclick = function() {
+    btnCancel.onclick = function () {
         modal.style.display = 'none';
     };
 }
@@ -244,20 +270,20 @@ function initializeData() {
     for (let i = 1; i <= 6; i++) {
         let sf1Winner = null;
         let sf2Winner = null;
-        
+
         // YENİ: Bay Geçer Kontrolü (Rakibi otomatik Play-off finaline atar)
         if (CUSTOM_TEAMS[`PO${i}_T1`] && CUSTOM_TEAMS[`PO${i}_T1`].name === "Bay Geçer") sf1Winner = `PO${i}_T2`;
         if (CUSTOM_TEAMS[`PO${i}_T2`] && CUSTOM_TEAMS[`PO${i}_T2`].name === "Bay Geçer") sf1Winner = `PO${i}_T1`;
-        
+
         if (CUSTOM_TEAMS[`PO${i}_T3`] && CUSTOM_TEAMS[`PO${i}_T3`].name === "Bay Geçer") sf2Winner = `PO${i}_T4`;
         if (CUSTOM_TEAMS[`PO${i}_T4`] && CUSTOM_TEAMS[`PO${i}_T4`].name === "Bay Geçer") sf2Winner = `PO${i}_T3`;
 
-        playoffs.push({ 
-            id: i, 
-            sf1: [`PO${i}_T1`, `PO${i}_T2`], sf1Winner: sf1Winner, 
-            sf2: [`PO${i}_T3`, `PO${i}_T4`], sf2Winner: sf2Winner, 
-            finalWinner: null, 
-            targetGroup: playoffTargetGroups[i - 1] 
+        playoffs.push({
+            id: i,
+            sf1: [`PO${i}_T1`, `PO${i}_T2`], sf1Winner: sf1Winner,
+            sf2: [`PO${i}_T3`, `PO${i}_T4`], sf2Winner: sf2Winner,
+            finalWinner: null,
+            targetGroup: playoffTargetGroups[i - 1]
         });
     }
     groups = {};
@@ -265,8 +291,8 @@ function initializeData() {
         groups[g] = { teams: [`${g}1`, `${g}2`, `${g}3`], matches: [], standings: [] };
         if (!playoffTargetGroups.includes(g)) groups[g].teams.push(`${g}4`);
     });
-    bracket = { r32: [], r16: Array(8).fill(null).map(()=>({t1:null, t2:null, w:null})), qf: Array(4).fill(null).map(()=>({t1:null, t2:null, w:null})), sf: Array(2).fill(null).map(()=>({t1:null, t2:null, w:null})), final: [{t1:null, t2:null, w:null}], thirdPlace: [{t1:null, t2:null, w:null}] };
-    currentStage = 1; 
+    bracket = { r32: [], r16: Array(8).fill(null).map(() => ({ t1: null, t2: null, w: null })), qf: Array(4).fill(null).map(() => ({ t1: null, t2: null, w: null })), sf: Array(2).fill(null).map(() => ({ t1: null, t2: null, w: null })), final: [{ t1: null, t2: null, w: null }], thirdPlace: [{ t1: null, t2: null, w: null }] };
+    currentStage = 1;
     manualSelectedThirds = [];
 }
 
@@ -305,8 +331,8 @@ document.getElementById('btn-restart').addEventListener('click', () => {
 });
 
 function resetKnockouts() {
-    bracket = { r32: [], r16: Array(8).fill(null).map(()=>({t1:null, t2:null, w:null})), qf: Array(4).fill(null).map(()=>({t1:null, t2:null, w:null})), sf: Array(2).fill(null).map(()=>({t1:null, t2:null, w:null})), final: [{t1:null, t2:null, w:null}], thirdPlace: [{t1:null, t2:null, w:null}] };
-    manualSelectedThirds = []; 
+    bracket = { r32: [], r16: Array(8).fill(null).map(() => ({ t1: null, t2: null, w: null })), qf: Array(4).fill(null).map(() => ({ t1: null, t2: null, w: null })), sf: Array(2).fill(null).map(() => ({ t1: null, t2: null, w: null })), final: [{ t1: null, t2: null, w: null }], thirdPlace: [{ t1: null, t2: null, w: null }] };
+    manualSelectedThirds = [];
     document.getElementById('nav-stage3').disabled = true;
     document.getElementById('nav-stage4').disabled = true;
     window.hasSavedChampion = false; // YENİ EKLENDİ (Yeni oyun için kilidi açar)
@@ -314,13 +340,14 @@ function resetKnockouts() {
     window.hasSavedChampion = false;
 }
 
-window.switchStage = function(stageNum) {
+window.switchStage = function (stageNum) {
+    playSound('click'); // 🔊 YENİ EKLENEN: Menü butonları tık sesi
     currentStage = stageNum; saveData();
     document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
     document.getElementById(`stage${stageNum}`).classList.add('active');
     document.getElementById(`nav-stage${stageNum}`).classList.add('active');
-    
+
     if (stageNum === 1) renderPlayoffs();
     if (stageNum === 2) { document.getElementById('nav-stage2').disabled = false; updateSettingsUI(); initGroups(); }
     if (stageNum === 3) { document.getElementById('nav-stage3').disabled = false; renderBracket(); }
@@ -328,14 +355,14 @@ window.switchStage = function(stageNum) {
 }
 
 // --- AYARLAR VE TEMA ---
-window.setTheme = function(theme) {
+window.setTheme = function (theme) {
     currentTheme = theme;
-    if(theme === 'dark') document.body.classList.add('dark-mode');
+    if (theme === 'dark') document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
     saveData(); updateSettingsUI();
 }
 
-window.changeGroupMode = function(mode) {
+window.changeGroupMode = function (mode) {
     if (groupMode !== mode) {
         showCustomConfirm("Modu değiştirmek, mevcut skorları ve eleme ağacını sıfırlayacaktır. Emin misiniz?", () => {
             groupMode = mode;
@@ -356,7 +383,7 @@ function updateSettingsUI() {
 }
 
 // Modal Kapatma Olayları
-window.onclick = function(event) {
+window.onclick = function (event) {
     if (event.target == document.getElementById('settings-modal')) document.getElementById('settings-modal').style.display = "none";
     if (event.target == document.getElementById('custom-modal')) document.getElementById('custom-modal').style.display = "none";
 }
@@ -411,11 +438,11 @@ function renderPlayoffs() {
     });
 }
 
-window.selectPlayoffWinner = function(index, stage, teamId) {
+window.selectPlayoffWinner = function (index, stage, teamId) {
     if (stage === 'sf1') playoffs[index].sf1Winner = teamId;
     if (stage === 'sf2') playoffs[index].sf2Winner = teamId;
     if (stage === 'final') playoffs[index].finalWinner = teamId;
-    if (stage !== 'final') playoffs[index].finalWinner = null; 
+    if (stage !== 'final') playoffs[index].finalWinner = null;
     saveData(); renderPlayoffs();
 };
 
@@ -425,12 +452,12 @@ document.getElementById('btn-complete-playoffs').addEventListener('click', () =>
         if (!po.finalWinner) allCompleted = false;
         else {
             if (!groups[po.targetGroup].teams.includes(po.finalWinner)) {
-                 if(groups[po.targetGroup].teams.length >= 4) groups[po.targetGroup].teams.pop();
-                 groups[po.targetGroup].teams.push(po.finalWinner);
+                if (groups[po.targetGroup].teams.length >= 4) groups[po.targetGroup].teams.pop();
+                groups[po.targetGroup].teams.push(po.finalWinner);
             }
         }
     });
-    
+
     if (!allCompleted) {
         showCustomAlert("Lütfen Play-off aşamasındaki tüm final maçlarının kazananlarını seçin!");
         return;
@@ -447,10 +474,10 @@ function initGroups() {
 
     groupsList.forEach(g => {
         const group = groups[g]; const t = group.teams;
-        if(group.matches.length === 0) {
-            group.matches = [ { t1: t[0], t2: t[1], s1: null, s2: null, w: null }, { t1: t[2], t2: t[3], s1: null, s2: null, w: null }, { t1: t[0], t2: t[2], s1: null, s2: null, w: null }, { t1: t[1], t2: t[3], s1: null, s2: null, w: null }, { t1: t[0], t2: t[3], s1: null, s2: null, w: null }, { t1: t[1], t2: t[2], s1: null, s2: null, w: null } ];
+        if (group.matches.length === 0) {
+            group.matches = [{ t1: t[0], t2: t[1], s1: null, s2: null, w: null }, { t1: t[2], t2: t[3], s1: null, s2: null, w: null }, { t1: t[0], t2: t[2], s1: null, s2: null, w: null }, { t1: t[1], t2: t[3], s1: null, s2: null, w: null }, { t1: t[0], t2: t[3], s1: null, s2: null, w: null }, { t1: t[1], t2: t[2], s1: null, s2: null, w: null }];
         }
-        
+
         const card = document.createElement('div'); card.className = 'card';
         let matchHTML = group.matches.map((m, mIdx) => {
             let html = '';
@@ -458,8 +485,8 @@ function initGroups() {
                 html = `<div class="match" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <div style="flex:1; text-align:right; cursor:pointer;" ${getHoverAttr(m.t1)}>${renderTeamContent(m.t1)}</div>
                     <div class="score-inputs" style="margin:0 10px;">
-                        <input type="number" min="0" value="${m.s1!==null?m.s1:''}" onchange="updateGroupScore('${g}', ${mIdx}, 's1', this.value)"> - 
-                        <input type="number" min="0" value="${m.s2!==null?m.s2:''}" onchange="updateGroupScore('${g}', ${mIdx}, 's2', this.value)">
+                        <input type="number" min="0" value="${m.s1 !== null ? m.s1 : ''}" onchange="updateGroupScore('${g}', ${mIdx}, 's1', this.value)"> - 
+                        <input type="number" min="0" value="${m.s2 !== null ? m.s2 : ''}" onchange="updateGroupScore('${g}', ${mIdx}, 's2', this.value)">
                     </div>
                     <div style="flex:1; text-align:left; cursor:pointer;" ${getHoverAttr(m.t2)}>${renderTeamContent(m.t2)}</div>
                 </div>`;
@@ -479,20 +506,20 @@ function initGroups() {
     });
 }
 
-window.updateGroupScore = function(groupName, matchIdx, scoreField, value) {
+window.updateGroupScore = function (groupName, matchIdx, scoreField, value) {
     groups[groupName].matches[matchIdx][scoreField] = value === '' ? null : parseInt(value);
     resetKnockouts(); updateTable(groupName); saveData();
 }
 
-window.updateGroupQuick = function(groupName, matchIdx, result) {
+window.updateGroupQuick = function (groupName, matchIdx, result) {
     groups[groupName].matches[matchIdx].w = result;
-    resetKnockouts(); updateTable(groupName); initGroups(); saveData(); 
+    resetKnockouts(); updateTable(groupName); initGroups(); saveData();
 }
 
 function updateTable(g) {
     const group = groups[g]; let stats = {};
-    group.teams.forEach(t => stats[t] = { id: t, p:0, w:0, d:0, l:0, gf:0, ga:0, gd:0, pts:0 });
-    
+    group.teams.forEach(t => stats[t] = { id: t, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 });
+
     group.matches.forEach(m => {
         // GÜVENLİK DUVARI: Takım boşsa (undefined) hesaplamayı atlar, çökmeyi engeller!
         if (m.t1 && m.t2 && stats[m.t1] && stats[m.t2]) {
@@ -511,8 +538,8 @@ function updateTable(g) {
     });
 
     group.standings = Object.values(stats).map(s => { s.gd = s.gf - s.ga; return s; }).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-    const tbody = document.querySelector(`#table-${g} tbody`); 
-    if(tbody) {
+    const tbody = document.querySelector(`#table-${g} tbody`);
+    if (tbody) {
         tbody.innerHTML = '';
         group.standings.forEach(s => {
             const team = getTeamData(s.id);
@@ -532,16 +559,16 @@ document.getElementById('btn-generate-knockouts').addEventListener('click', () =
     if (groupMode === 'quick') {
         document.getElementById('groups-main-screen').style.display = 'none';
         document.getElementById('manual-thirds-screen').style.display = 'block';
-        
+
         thirds.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
         const thresholdPts = thirds[7].pts;
         const lockedInTeams = thirds.filter(t => t.pts > thresholdPts).map(t => t.id);
         const bubbleTeams = thirds.filter(t => t.pts === thresholdPts).map(t => t.id);
         const lockedOutTeams = thirds.filter(t => t.pts < thresholdPts).map(t => t.id);
-        
+
         const neededFromBubble = 8 - lockedInTeams.length;
         const isBubbleLocked = (bubbleTeams.length === neededFromBubble);
-        
+
         window.currentLockedIn = lockedInTeams;
         window.currentBubbleNeeded = neededFromBubble;
         window.isBubbleLockedGlobal = isBubbleLocked;
@@ -552,16 +579,16 @@ document.getElementById('btn-generate-knockouts').addEventListener('click', () =
             bubbleTeams.forEach(id => { if (!validSelections.includes(id)) validSelections.push(id); });
         }
         manualSelectedThirds = validSelections;
-        
+
         const grid = document.getElementById('manual-thirds-grid');
         grid.innerHTML = '';
-        
+
         thirds.forEach(t => {
             const isLockedIn = lockedInTeams.includes(t.id) || (isBubbleLocked && bubbleTeams.includes(t.id));
             const isLockedOut = lockedOutTeams.includes(t.id);
             const isBubble = bubbleTeams.includes(t.id) && !isBubbleLocked;
             const isSelected = manualSelectedThirds.includes(t.id);
-            
+
             const team = getTeamData(t.id);
             let statusText = '';
             let style = 'width:200px; padding:15px; position:relative; ';
@@ -596,7 +623,7 @@ document.getElementById('btn-generate-knockouts').addEventListener('click', () =
     }
 });
 
-window.toggleManualThird = function(teamId) {
+window.toggleManualThird = function (teamId) {
     if (manualSelectedThirds.includes(teamId)) {
         manualSelectedThirds = manualSelectedThirds.filter(t => t !== teamId);
     } else {
@@ -608,14 +635,14 @@ window.toggleManualThird = function(teamId) {
             return;
         }
     }
-    document.getElementById('btn-generate-knockouts').click(); 
+    document.getElementById('btn-generate-knockouts').click();
     saveData();
 }
 
 function updateThirdsCount() {
     const count = manualSelectedThirds.length;
     document.getElementById('thirds-count').innerText = count;
-    
+
     const btn = document.getElementById('btn-confirm-thirds');
     if (count === 8) {
         btn.disabled = false;
@@ -634,7 +661,7 @@ function updateThirdsCount() {
 }
 
 document.getElementById('btn-confirm-thirds').addEventListener('click', () => {
-    if(manualSelectedThirds.length === 8) generateBracket();
+    if (manualSelectedThirds.length === 8) generateBracket();
 });
 
 // --- AŞAMA 3: ELEME AĞACINI OLUŞTURMA ---
@@ -655,14 +682,14 @@ function generateBracket() {
     }
 
     const thirdRules = [
-        { matchIdx: 0, allowed: ['A','B','C','D','F'] }, { matchIdx: 1, allowed: ['C','D','F','G','H'] }, 
-        { matchIdx: 6, allowed: ['B','E','F','I','J'] }, { matchIdx: 7, allowed: ['A','E','H','I','J'] }, 
-        { matchIdx: 10, allowed: ['C','E','F','H','I'] }, { matchIdx: 11, allowed: ['E','H','I','J','K'] },
-        { matchIdx: 14, allowed: ['E','F','G','I','J'] }, { matchIdx: 15, allowed: ['D','E','I','J','L'] } 
+        { matchIdx: 0, allowed: ['A', 'B', 'C', 'D', 'F'] }, { matchIdx: 1, allowed: ['C', 'D', 'F', 'G', 'H'] },
+        { matchIdx: 6, allowed: ['B', 'E', 'F', 'I', 'J'] }, { matchIdx: 7, allowed: ['A', 'E', 'H', 'I', 'J'] },
+        { matchIdx: 10, allowed: ['C', 'E', 'F', 'H', 'I'] }, { matchIdx: 11, allowed: ['E', 'H', 'I', 'J', 'K'] },
+        { matchIdx: 14, allowed: ['E', 'F', 'G', 'I', 'J'] }, { matchIdx: 15, allowed: ['D', 'E', 'I', 'J', 'L'] }
     ];
 
     function solveThirds(teams, index, assignment) {
-        if (index === 8) return assignment; 
+        if (index === 8) return assignment;
         const rule = thirdRules[index];
         for (let i = 0; i < teams.length; i++) {
             const team = teams[i];
@@ -671,12 +698,12 @@ function generateBracket() {
                 assignment[rule.matchIdx] = team.id;
                 const result = solveThirds(teams, index + 1, assignment);
                 if (result) return result;
-                team.used = false; 
+                team.used = false;
             }
         }
         return null;
     }
-    
+
     bestThirds.forEach(t => t.used = false);
     let finalAssignments = solveThirds(bestThirds, 0, {});
 
@@ -685,7 +712,7 @@ function generateBracket() {
         bestThirds.forEach(t => t.used = false);
         thirdRules.forEach(rule => {
             let found = bestThirds.find(t => !t.used && rule.allowed.includes(t.group));
-            if (!found) found = bestThirds.find(t => !t.used); 
+            if (!found) found = bestThirds.find(t => !t.used);
             if (found) { found.used = true; finalAssignments[rule.matchIdx] = found.id; }
         });
     }
@@ -705,9 +732,10 @@ function generateBracket() {
 }
 
 // --- YENİ: HAFIZALI VE OTOMATİK AŞAĞI KAYDIRMALI SEÇİM SİSTEMİ ---
-window.selectKnockoutWinner = function(round, matchIdx, teamId) {
+window.selectKnockoutWinner = function (round, matchIdx, teamId) {
+    playSound('select');
     function isRoundComplete(r) { return bracket[r].every(m => m.w !== null); }
-    
+
     // Kurallar ve Uyarılar
     if (round === 'r16' && !isRoundComplete('r32')) { showCustomAlert("Lütfen önce Son 32 turundaki tüm maçları tamamlayın!"); return; }
     if (round === 'qf' && !isRoundComplete('r16')) { showCustomAlert("Lütfen önce Son 16 turundaki tüm maçları tamamlayın!"); return; }
@@ -717,23 +745,23 @@ window.selectKnockoutWinner = function(round, matchIdx, teamId) {
     bracket[round][matchIdx].w = teamId;
     const rounds = ['r32', 'r16', 'qf', 'sf', 'final'];
     const currentRoundIdx = rounds.indexOf(round);
-    
+
     // Sonraki Turlara Aktarma İşlemleri
     if (round === 'sf') {
         const match = bracket.sf[matchIdx];
         const loserId = (match.t1 === teamId) ? match.t2 : match.t1;
         const slot = matchIdx % 2 === 0 ? 't1' : 't2';
-        bracket['final'][0][slot] = teamId; bracket['final'][0].w = null; 
+        bracket['final'][0][slot] = teamId; bracket['final'][0].w = null;
         bracket['thirdPlace'][0][slot] = loserId; bracket['thirdPlace'][0].w = null;
-    } else if (currentRoundIdx !== -1 && currentRoundIdx < rounds.length - 1) { 
+    } else if (currentRoundIdx !== -1 && currentRoundIdx < rounds.length - 1) {
         const nextRound = rounds[currentRoundIdx + 1];
         const nextMatchIdx = Math.floor(matchIdx / 2);
         const slot = matchIdx % 2 === 0 ? 't1' : 't2';
-        bracket[nextRound][nextMatchIdx][slot] = teamId; bracket[nextRound][nextMatchIdx].w = null; 
+        bracket[nextRound][nextMatchIdx][slot] = teamId; bracket[nextRound][nextMatchIdx].w = null;
     }
-    
+
     if (round === 'thirdPlace') bracket['thirdPlace'][0].w = teamId;
-    saveData(); 
+    saveData();
 
     // 🚨 1. AŞAMA: EKRAN YENİLENMEDEN ÖNCE KAYDIRMA ÇUBUĞUNUN YERİNİ HAFIZAYA AL
     const container = document.getElementById('bracket-container');
@@ -758,23 +786,24 @@ window.selectKnockoutWinner = function(round, matchIdx, teamId) {
 
     // HER İKİ FİNAL BİTİNCE SONUÇLARA GEÇ
     if (bracket.final[0].w && bracket.thirdPlace[0].w) {
+        playSound('cheer');
         setTimeout(() => { switchStage(4); }, 800);
-        return; 
+        return;
     }
 
     // 🚨 3. AŞAMA: İKİ MAÇ (BİR ÇİFT) BİTTİĞİNDE OTOMATİK AŞAĞI KAYDIR (SADECE MOBİL)
-    let pairPartnerIdx = matchIdx % 2 === 0 ? matchIdx + 1 : matchIdx - 1; 
+    let pairPartnerIdx = matchIdx % 2 === 0 ? matchIdx + 1 : matchIdx - 1;
     if (bracket[round][pairPartnerIdx] && bracket[round][matchIdx].w && bracket[round][pairPartnerIdx].w) {
-        
+
         let nextPairIdx = matchIdx % 2 === 0 ? matchIdx + 2 : matchIdx + 1;
         let nextMatchElem = document.getElementById(`${round}-${nextPairIdx}-t1`);
-        
+
         // 📱 YENİ: Sadece ekran genişliği 768px veya altındaysa (yani telefonsa) kaydır
         if (nextMatchElem && window.innerWidth <= 768) {
             setTimeout(() => {
                 let matchBox = nextMatchElem.closest('.knockout-match') || nextMatchElem;
                 matchBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 250); 
+            }, 250);
         }
     }
 
@@ -784,8 +813,8 @@ window.selectKnockoutWinner = function(round, matchIdx, teamId) {
         let nextColId = 'round-col-' + nextColMap[round];
         setTimeout(() => {
             const col = document.getElementById(nextColId);
-            if(col) col.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-        }, 300); 
+            if (col) col.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+        }, 300);
     }
 };
 
@@ -800,7 +829,7 @@ function renderBracketColumn(title, roundId, matches, extraClass = "") {
     let html = `<div class="round ${extraClass}" id="round-col-${roundId}"><h3 class="round-title">${title}</h3>`;
     for (let i = 0; i < matches.length; i += 2) {
         if (i + 1 < matches.length) {
-            html += `<div class="match-pair">${createMatchHTML(matches[i], roundId, i)}${createMatchHTML(matches[i+1], roundId, i+1)}</div>`;
+            html += `<div class="match-pair">${createMatchHTML(matches[i], roundId, i)}${createMatchHTML(matches[i + 1], roundId, i + 1)}</div>`;
         } else {
             html += createMatchHTML(matches[i], roundId, i);
         }
@@ -809,9 +838,9 @@ function renderBracketColumn(title, roundId, matches, extraClass = "") {
 }
 
 function renderBracket() {
-    if(bracket.r32.length === 0) return;
+    if (bracket.r32.length === 0) return;
     const container = document.getElementById('bracket-container');
-    
+
     // YENİ: FİNAL MAÇININ HİZALAMASI MERKEZE ALINDI
     let finalColumnHTML = `<div class="round final-column" id="round-col-final-col" style="justify-content: flex-start;">
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative;">
@@ -834,7 +863,7 @@ function renderBracket() {
             </div>
         </div>
     </div>`;
-    
+
     container.innerHTML = renderBracketColumn('Son 32', 'r32', bracket.r32) + renderBracketColumn('Son 16', 'r16', bracket.r16) + renderBracketColumn('Çeyrek Final', 'qf', bracket.qf) + renderBracketColumn('Yarı Final', 'sf', bracket.sf) + finalColumnHTML;
 }
 
@@ -897,7 +926,7 @@ function renderResults() {
         db.ref('global_stats').on('value', (snapshot) => {
             const data = snapshot.val();
             const heatmapDiv = document.getElementById('heatmap-content');
-            
+
             if (data && heatmapDiv) {
                 // Verileri diziye çevir
                 const teamsArray = Object.keys(data).map(teamName => {
@@ -909,10 +938,10 @@ function renderResults() {
                         fourth: data[teamName].fourth || 0
                     };
                 });
-                
+
                 // Olimpiyat Sıralaması (Önce Altına, eşitse Gümüşe göre sırala)
                 teamsArray.sort((a, b) => b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze || b.fourth - a.fourth);
-                
+
                 let tableHTML = `
                     <div style="overflow-x: auto;">
                         <table style="width:100%; border-collapse: collapse; margin-top: 10px; font-size: 0.95em; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden;">
@@ -927,7 +956,7 @@ function renderResults() {
                             </thead>
                             <tbody>
                 `;
-                
+
                 // İsimden Bayrak Bulan Mini Fonksiyon
                 const getFlagByName = (name) => {
                     for (let key in CUSTOM_TEAMS) {
@@ -940,7 +969,7 @@ function renderResults() {
                 teamsArray.slice(0, 6).forEach((t, index) => {
                     const flagUrl = getFlagByName(t.name);
                     const bgClass = index % 2 === 0 ? 'background-color: rgba(0,0,0,0.1);' : 'background-color: transparent;';
-                    
+
                     // Eğer 0 ise soluk yazsın, sayısı varsa parlasın
                     const goldStyle = t.gold > 0 ? 'font-weight:bold; color:#FFD700;' : 'color:var(--text-muted); opacity: 0.3;';
                     const silverStyle = t.silver > 0 ? 'font-weight:bold; color:#C0C0C0;' : 'color:var(--text-muted); opacity: 0.3;';
@@ -961,7 +990,7 @@ function renderResults() {
                         </tr>
                     `;
                 });
-                
+
                 tableHTML += `</tbody></table></div>`;
                 heatmapDiv.innerHTML = tableHTML;
             } else if (heatmapDiv) {
@@ -971,36 +1000,36 @@ function renderResults() {
     }
 
     // Konfeti Efekti
-    var duration = 4 * 1000; 
+    var duration = 4 * 1000;
     var animationEnd = Date.now() + duration;
     var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 999999, disableForReducedMotion: true };
 
     function randomInRange(min, max) { return Math.random() * (max - min) + min; }
 
-    var interval = setInterval(function() {
-      var timeLeft = animationEnd - Date.now();
-      if (timeLeft <= 0) return clearInterval(interval);
-      var particleCount = 50 * (timeLeft / duration);
-      
-      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+    var interval = setInterval(function () {
+        var timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) return clearInterval(interval);
+        var particleCount = 50 * (timeLeft / duration);
+
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
     }, 250);
 }
 
 // ========================================================================
 // 📸 YENİLENMİŞ AĞACI RESİM OLARAK İNDİRME 
 // ========================================================================
-window.downloadBracket = function() {
+window.downloadBracket = function () {
     const bracketDiv = document.getElementById('bracket-container');
     const r32Col = document.getElementById('round-col-r32');
-    const stage3 = document.getElementById('stage3'); 
-    
+    const stage3 = document.getElementById('stage3');
+
     showCustomAlert("Tahmin ağacınız yüksek kalitede fotoğrafa dönüştürülüyor, lütfen bekleyin...");
 
     const originalStage3Display = stage3.style.display;
-    stage3.style.display = 'block'; 
-    stage3.style.position = 'absolute'; 
-    stage3.style.top = '-9999px'; 
+    stage3.style.display = 'block';
+    stage3.style.position = 'absolute';
+    stage3.style.top = '-9999px';
 
     let originalR32Display = '';
     if (r32Col) {
@@ -1011,16 +1040,16 @@ window.downloadBracket = function() {
     bracketDiv.style.overflowX = 'visible';
 
     const bgColor = window.getComputedStyle(bracketDiv).backgroundColor;
-    
+
     setTimeout(() => {
         html2canvas(bracketDiv, {
-            backgroundColor: bgColor, 
-            scale: 2, 
-            useCORS: true 
+            backgroundColor: bgColor,
+            scale: 2,
+            useCORS: true
         }).then(canvas => {
             if (r32Col) r32Col.style.display = originalR32Display;
             bracketDiv.style.overflowX = originalOverflow;
-            
+
             stage3.style.display = originalStage3Display;
             stage3.style.position = '';
             stage3.style.top = '';
@@ -1029,7 +1058,7 @@ window.downloadBracket = function() {
             link.download = 'dunya_kupasi_tahminim.png';
             link.href = canvas.toDataURL('image/png');
             link.click();
-            
+
             document.getElementById('custom-modal').style.display = "none";
         }).catch(err => {
             if (r32Col) r32Col.style.display = originalR32Display;
@@ -1037,7 +1066,7 @@ window.downloadBracket = function() {
             stage3.style.display = originalStage3Display;
             stage3.style.position = '';
             stage3.style.top = '';
-            
+
             document.getElementById('custom-modal').style.display = "none";
             alert("Resim oluşturulurken bir hata oluştu.");
         });
@@ -1092,18 +1121,18 @@ function getTeamPower(teamId) {
     return teamPowers[teamName] || 60; // Listede unutulan takım olursa 60 gücünde sayılır
 }
 
-window.runSimulation = function() {
+window.runSimulation = function () {
     showCustomAlert("Zarlar atılıyor... Kalan tüm maçlar güncel kadro değerlerine göre simüle ediliyor! 🎲");
 
     setTimeout(() => {
         // 1. PLAY-OFF'LARI SİMÜLE ET
         playoffs.forEach(po => {
-            if (!po.sf1Winner) { po.sf1Winner = (getTeamPower(po.sf1[0]) + Math.random()*30) > (getTeamPower(po.sf1[1]) + Math.random()*30) ? po.sf1[0] : po.sf1[1]; }
-            if (!po.sf2Winner) { po.sf2Winner = (getTeamPower(po.sf2[0]) + Math.random()*30) > (getTeamPower(po.sf2[1]) + Math.random()*30) ? po.sf2[0] : po.sf2[1]; }
-            if (!po.finalWinner) { po.finalWinner = (getTeamPower(po.sf1Winner) + Math.random()*30) > (getTeamPower(po.sf2Winner) + Math.random()*30) ? po.sf1Winner : po.sf2Winner; }
-            
+            if (!po.sf1Winner) { po.sf1Winner = (getTeamPower(po.sf1[0]) + Math.random() * 30) > (getTeamPower(po.sf1[1]) + Math.random() * 30) ? po.sf1[0] : po.sf1[1]; }
+            if (!po.sf2Winner) { po.sf2Winner = (getTeamPower(po.sf2[0]) + Math.random() * 30) > (getTeamPower(po.sf2[1]) + Math.random() * 30) ? po.sf2[0] : po.sf2[1]; }
+            if (!po.finalWinner) { po.finalWinner = (getTeamPower(po.sf1Winner) + Math.random() * 30) > (getTeamPower(po.sf2Winner) + Math.random() * 30) ? po.sf1Winner : po.sf2Winner; }
+
             if (!groups[po.targetGroup].teams.includes(po.finalWinner)) {
-                if(groups[po.targetGroup].teams.length >= 4) groups[po.targetGroup].teams.pop();
+                if (groups[po.targetGroup].teams.length >= 4) groups[po.targetGroup].teams.pop();
                 groups[po.targetGroup].teams.push(po.finalWinner);
             }
         });
@@ -1111,7 +1140,7 @@ window.runSimulation = function() {
         // EKSİK OLAN HAYATİ KOD BURASIYDI: Play-off'tan gelenleri maçlara yerleştir!
         groupsList.forEach(g => {
             const t = groups[g].teams;
-            if(groups[g].matches.length === 6) {
+            if (groups[g].matches.length === 6) {
                 groups[g].matches[0].t1 = t[0]; groups[g].matches[0].t2 = t[1];
                 groups[g].matches[1].t1 = t[2]; groups[g].matches[1].t2 = t[3];
                 groups[g].matches[2].t1 = t[0]; groups[g].matches[2].t2 = t[2];
@@ -1121,19 +1150,19 @@ window.runSimulation = function() {
             }
         });
 
-        if(groups['A'].matches.length === 0) initGroups(); 
-        
+        if (groups['A'].matches.length === 0) initGroups();
+
         groupsList.forEach(g => {
             groups[g].matches.forEach(m => {
-                let p1 = getTeamPower(m.t1) + Math.random() * 40; 
+                let p1 = getTeamPower(m.t1) + Math.random() * 40;
                 let p2 = getTeamPower(m.t2) + Math.random() * 40;
-                
+
                 if (groupMode === 'score') {
                     if (m.s1 === null || m.s2 === null) {
-                        let score1 = Math.floor(p1 / 32); 
+                        let score1 = Math.floor(p1 / 32);
                         let score2 = Math.floor(p2 / 32);
-                        if(score1 > 4) score1 = Math.floor(Math.random() * 3) + 1; 
-                        if(score2 > 4) score2 = Math.floor(Math.random() * 3) + 1;
+                        if (score1 > 4) score1 = Math.floor(Math.random() * 3) + 1;
+                        if (score2 > 4) score2 = Math.floor(Math.random() * 3) + 1;
                         m.s1 = score1;
                         m.s2 = score2;
                     }
@@ -1144,7 +1173,7 @@ window.runSimulation = function() {
                     }
                 }
             });
-            updateTable(g); 
+            updateTable(g);
         });
 
         if (bracket.r32.length === 0) {
@@ -1155,54 +1184,54 @@ window.runSimulation = function() {
             });
             thirds.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
             manualSelectedThirds = thirds.slice(0, 8).map(t => t.id);
-            generateBracket(); 
+            generateBracket();
         }
 
         const advanceKnockoutData = (round, matchIdx, teamId) => {
             bracket[round][matchIdx].w = teamId;
             const rounds = ['r32', 'r16', 'qf', 'sf', 'final'];
             const currentRoundIdx = rounds.indexOf(round);
-            
+
             if (round === 'sf') {
                 const match = bracket.sf[matchIdx];
                 const loserId = (match.t1 === teamId) ? match.t2 : match.t1;
                 const slot = matchIdx % 2 === 0 ? 't1' : 't2';
-                bracket['final'][0][slot] = teamId; 
-                bracket['thirdPlace'][0][slot] = loserId; 
-            } else if (currentRoundIdx !== -1 && currentRoundIdx < rounds.length - 1) { 
+                bracket['final'][0][slot] = teamId;
+                bracket['thirdPlace'][0][slot] = loserId;
+            } else if (currentRoundIdx !== -1 && currentRoundIdx < rounds.length - 1) {
                 const nextRound = rounds[currentRoundIdx + 1];
                 const nextMatchIdx = Math.floor(matchIdx / 2);
                 const slot = matchIdx % 2 === 0 ? 't1' : 't2';
-                bracket[nextRound][nextMatchIdx][slot] = teamId; 
+                bracket[nextRound][nextMatchIdx][slot] = teamId;
             }
         };
 
         const simulateRound = (roundName) => {
             bracket[roundName].forEach((m, idx) => {
                 if (!m.w && m.t1 && m.t2 && !m.t1.startsWith('Bekleniyor') && !m.t2.startsWith('Bekleniyor')) {
-                    let p1 = getTeamPower(m.t1) + Math.random() * 30; 
+                    let p1 = getTeamPower(m.t1) + Math.random() * 30;
                     let p2 = getTeamPower(m.t2) + Math.random() * 30;
                     advanceKnockoutData(roundName, idx, p1 > p2 ? m.t1 : m.t2);
                 }
             });
         };
 
-        simulateRound('r32'); simulateRound('r16'); simulateRound('qf'); 
+        simulateRound('r32'); simulateRound('r16'); simulateRound('qf');
         simulateRound('sf'); simulateRound('thirdPlace'); simulateRound('final');
 
         // 5. HER ŞEY BİTTİ, EKRANI YENİLE VE SONUCA GİT
         saveData();
         document.getElementById('custom-modal').style.display = "none";
-        
+
         // YENİ EKLENEN KOD: Tüm sekmelerin kilitlerini aç!
         document.getElementById('nav-stage2').disabled = false;
         document.getElementById('nav-stage3').disabled = false;
         document.getElementById('nav-stage4').disabled = false;
-        
-        initGroups(); 
+
+        initGroups();
         renderBracket();
-        if(currentStage === 1) renderPlayoffs();
-        
+        if (currentStage === 1) renderPlayoffs();
+
         switchStage(4);
 
     }, 800);
@@ -1214,11 +1243,11 @@ window.runSimulation = function() {
 // Mobilde basılı tutmayı algılamak için zamanlayıcı
 let tooltipTimer;
 
-window.getHoverAttr = function(teamId) {
+window.getHoverAttr = function (teamId) {
     if (!teamId || teamId.startsWith('Bekleniyor')) return '';
     const team = getTeamData(teamId);
-    if (team.name === 'Bay Geçer') return ''; 
-    
+    if (team.name === 'Bay Geçer') return '';
+
     // Bilgisayarda mouse ile (hover), Mobilde basılı tutunca (500ms) açılır
     return `
         onmouseenter="if(window.innerWidth > 768) showTooltip('${teamId}', event)" 
@@ -1231,7 +1260,7 @@ window.getHoverAttr = function(teamId) {
 }
 
 // YENİ: Tooltip açıkken ekranda BÖŞ BİR YERE dokunulursa tooltip'i kapatır
-document.addEventListener('touchstart', function(e) {
+document.addEventListener('touchstart', function (e) {
     const tooltip = document.getElementById('team-tooltip');
     if (tooltip && tooltip.style.display === 'block') {
         // Eğer dokunulan yer bir takım değilse ve tooltip'in kendisi değilse gizle
@@ -1313,7 +1342,7 @@ const TEAM_INFO = {
     "Yeni Kaledonya": { rank: 150, star: "Joris Kenon", ach: "Katılamadı", value: "Bilinmiyor" }
 };
 
-window.showTooltip = function(teamId, event) {
+window.showTooltip = function (teamId, event) {
     if (!teamId || teamId.startsWith('Bekleniyor') || teamId.startsWith('Bay Geçer')) return;
 
     const team = getTeamData(teamId);
@@ -1333,7 +1362,7 @@ window.showTooltip = function(teamId, event) {
 
     tooltip.style.display = 'block';
     tooltip.style.opacity = '1';
-    
+
     let tooltipWidth = tooltip.offsetWidth;
     let tooltipHeight = tooltip.offsetHeight;
 
@@ -1347,7 +1376,7 @@ window.showTooltip = function(teamId, event) {
     tooltip.style.top = posY + window.scrollY + 'px';
 };
 
-window.hideTooltip = function() {
+window.hideTooltip = function () {
     const tooltip = document.getElementById('team-tooltip');
     tooltip.style.opacity = '0';
     setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 100);
@@ -1372,37 +1401,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnSimulate = document.getElementById('btn-simulate');
     const btnRestart = document.getElementById('btn-restart');
     const btnSettings = document.getElementById('btn-settings');
-    
+
     // Eğer butonlar sayfada varsa işlemi yap
-    if(btnSimulate && btnRestart && btnSettings) {
+    if (btnSimulate && btnRestart && btnSettings) {
         const menuWrapper = document.createElement('div');
         menuWrapper.id = 'smart-menu-wrapper';
-        
+
         const burgerBtn = document.createElement('button');
         burgerBtn.id = 'smart-burger-btn';
         burgerBtn.innerHTML = '☰'; // Menü İkonu
-        
+
         const dropdown = document.createElement('div');
         dropdown.id = 'smart-dropdown';
-        
+
         // Logoları yeni akıllı kutuya taşı
         dropdown.appendChild(btnSimulate);
         dropdown.appendChild(btnRestart);
         dropdown.appendChild(btnSettings);
-        
+
         menuWrapper.appendChild(burgerBtn);
         menuWrapper.appendChild(dropdown);
         document.body.appendChild(menuWrapper);
-        
+
         // Burger butona tıklayınca menüyü aç/kapat
         burgerBtn.addEventListener('click', (e) => {
             dropdown.classList.toggle('show');
             e.stopPropagation();
         });
-        
+
         // Ekranda boş bir yere tıklanırsa menüyü otomatik kapat
         document.addEventListener('click', (e) => {
-            if(!menuWrapper.contains(e.target)) {
+            if (!menuWrapper.contains(e.target)) {
                 dropdown.classList.remove('show');
             }
         });
